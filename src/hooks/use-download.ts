@@ -8,6 +8,7 @@ import type { DownloadImage, ZipWriter } from "@/types";
 interface DownloadOptions {
   onProgress?: (current: number, total: number) => void;
   onError?: (url: string, error: Error) => void;
+  onSave?: () => void;
 }
 
 export function useDownload() {
@@ -186,6 +187,7 @@ export function useDownload() {
             const fileName = getFileNameFromUrl(url);
             saveAs(blob, fileName);
             handleProgress(1, 1);
+            options.onSave?.();
           } catch (error: any) {
             if (error.name !== "AbortError") {
               onError(url, error as Error);
@@ -200,6 +202,7 @@ export function useDownload() {
             handleProgress,
             onError,
           );
+          options.onSave?.();
         }
       } catch (error: any) {
         if (error.name !== "AbortError") {
