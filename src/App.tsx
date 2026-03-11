@@ -12,6 +12,7 @@ import { db, SettingService } from "./db";
 import SettingModal from "./components/SettingModal";
 import { SettingContext } from "./context/SettingContext";
 import { useLiveQuery } from "dexie-react-hooks";
+import { replaceTemplate } from "./utils/common";
 
 function App() {
   const [isOpenMainPanel, setIsOpenMainPanel] = useState(false);
@@ -97,7 +98,10 @@ function App() {
         return;
       }
       const downloadedArray = await db.downloaded.toArray();
-      const downloadedUrl = new Set(downloadedArray.map(item => item.url));
+      const downloadedUrl = new Set(downloadedArray.map((item) => item.url));
+      const customFilenameTemplate =
+        setting.find((item) => item.key === "custom_filename_template")
+          ?.value || '${conversation_id}_${message_id}_${index_in_conv}_${creation.image.key}';
       const downloadImages = convMessages
         .filter(
           (conv): conv is ConvMessage & { creation: Creation } =>
@@ -105,8 +109,7 @@ function App() {
         )
         // 过滤已下载的图片
         .filter(
-          (conv) =>
-            !downloadedUrl.has(conv.creation.image.image_ori_raw.url),
+          (conv) => !downloadedUrl.has(conv.creation.image.image_ori_raw.url),
         )
         .flatMap((conv) => {
           return {
@@ -114,22 +117,27 @@ function App() {
             message_id: conv.message_id,
             key: conv.creation.image.key,
             url: conv.creation.image.image_ori_raw.url,
+            filename: replaceTemplate(customFilenameTemplate, conv),
           };
         });
       if (downloadImages.length === 0) {
-        Toast.warning(`没有可下载的图片，跳过已下载的图片数量：${downloadedUrl.size}`);
+        Toast.warning(
+          `没有可下载的图片，跳过已下载的图片数量：${downloadedUrl.size}`,
+        );
         return;
       }
       download(downloadImages, {
-        onSave(){
+        onSave() {
           Toast.success("下载完成");
           // 批量添加
-          db.downloaded.bulkAdd(downloadImages.map(item => {
-            return {
-              url: item.url,
-            };
-          }));
-        }
+          db.downloaded.bulkAdd(
+            downloadImages.map((item) => {
+              return {
+                url: item.url,
+              };
+            }),
+          );
+        },
       });
     },
     [download, isDownloading],

@@ -93,7 +93,7 @@ export function useDownload() {
                 }
                 const stream = () =>
                   res.body as ReadableStream<Uint8Array<ArrayBuffer>>;
-                let fileName = getFileNameFromUrl(url);
+                let fileName = downloadImage.filename || getFileNameFromUrl(url);
 
                 zipWriter.enqueue({
                   name: fileName,
@@ -180,11 +180,12 @@ export function useDownload() {
 
         // 单张图片直接下载
         if (downloadImageList.length === 1) {
-          const url = downloadImageList[0].url;
+          const downloadImage = downloadImageList[0];
+          const url = downloadImage.url;
           try {
             const response = await getImageResponse(url);
             const blob = await response.blob();
-            const fileName = getFileNameFromUrl(url);
+            const fileName = downloadImage.filename || getFileNameFromUrl(url);
             saveAs(blob, fileName);
             handleProgress(1, 1);
             options.onSave?.();

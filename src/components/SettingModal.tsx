@@ -1,4 +1,4 @@
-import { Modal, Switch, Toast, InputNumber } from "@douyinfe/semi-ui-19";
+import { Modal, Switch, Toast, InputNumber, Input } from "@douyinfe/semi-ui-19";
 import { useContext } from "react";
 import { SettingContext } from "@/context/SettingContext";
 import { Setting } from "@/types";
@@ -14,6 +14,9 @@ function SettingModal({ isOpenSetting, onCloseSetting }: SettingModalProps) {
   const skipDownloaded = setting.find((item) => item.key === "skip_downloaded");
   const downloadConcurrency = setting.find(
     (item) => item.key === "download_concurrency",
+  );
+  const customFilenameTemplate = setting.find(
+    (item) => item.key === "custom_filename_template",
   );
 
   const changeSetting = (item: Setting | undefined, value: any) => {
@@ -56,12 +59,17 @@ function SettingModal({ isOpenSetting, onCloseSetting }: SettingModalProps) {
             }}
           />
         </div>
-        {/* 
-          TODO 自定义下载文件名 string
-          使用${}占位，支持Conv数据填充
-          ${index}-${tts_content}-${message_id}
-          1-生成小猫图片-XXXXXXXXXXXXX.png
-        */}
+
+        <div className="dd:flex dd:flex-row dd:items-center dd:gap-2">
+          <label className="dd:text-sm">{customFilenameTemplate?.label}</label>
+          <Input
+            placeholder="请输入自定义文件名模板，为空则使用默认模板"
+            value={customFilenameTemplate?.value}
+            onEnterPress={(e) => {
+              changeSetting(customFilenameTemplate, e.currentTarget.value);
+            }}
+          />
+        </div>
 
         {/* 
           TODO 下载时为每个会话创建文件夹 true|false

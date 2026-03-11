@@ -27,6 +27,11 @@ export const SETTING_DEFAULTS: Setting[] = [
     value: 5,
     label: "下载图片并发数",
   },
+  {
+    key: "custom_filename_template",
+    value: '${conversation_id}_${message_id}_${index_in_conv}_${creation.image.key}',
+    label: "自定义图片文件名",
+  },
 ];
 
 export class SettingService {
