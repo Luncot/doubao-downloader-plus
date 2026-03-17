@@ -97,11 +97,15 @@ function App() {
         Toast.warning("请选择要下载的图片");
         return;
       }
-      const downloadedArray = await db.downloaded.toArray();
+      const downloadedArray =
+        setting.filter((item) => item.key === "skip_downloaded") || false
+          ? await db.downloaded.toArray()
+          : [];
       const downloadedUrl = new Set(downloadedArray.map((item) => item.url));
       const customFilenameTemplate =
         setting.find((item) => item.key === "custom_filename_template")
-          ?.value || '${conversation_id}_${message_id}_${index_in_conv}_${creation.image.key}';
+          ?.value ||
+        "${conversation_id}_${message_id}_${index_in_conv}_${creation.image.key}";
       const createFolder =
         setting.find((item) => item.key === "create_folder")?.value || false;
       const downloadImages = convMessages
@@ -117,9 +121,12 @@ function App() {
           return {
             conversation_id: conv.conversation_id,
             message_id: conv.message_id,
-            key: conv.creation.image.key.replace(/\//g, '_'),
+            key: conv.creation.image.key.replace(/\//g, "_"),
             url: conv.creation.image.image_ori_raw.url,
-            filename: completeSuffix(replaceTemplate(customFilenameTemplate, conv), 'png').replace(/\//g, '_'),
+            filename: completeSuffix(
+              replaceTemplate(customFilenameTemplate, conv),
+              "png",
+            ).replace(/\//g, "_"),
             folder: createFolder ? conv.tts_content + "/" : "",
           };
         });
