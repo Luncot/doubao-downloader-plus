@@ -66,8 +66,8 @@ function SettingModal({ isOpenSetting, onCloseSetting }: SettingModalProps) {
           <Input
             placeholder="请输入自定义文件名模板，为空则使用默认模板"
             value={customFilenameTemplate?.value}
-            onEnterPress={(e) => {
-              changeSetting(customFilenameTemplate, e.currentTarget.value);
+            onChange={(value) => {
+              changeSetting(customFilenameTemplate, value);
             }}
           />
         </div>
@@ -88,8 +88,8 @@ function SettingModal({ isOpenSetting, onCloseSetting }: SettingModalProps) {
             min={0}
             max={Number.MAX_SAFE_INTEGER}
             value={downloadConcurrency?.value}
-            onEnterPress={(e) => {
-              changeSetting(downloadConcurrency, e.currentTarget.value);
+            onChange={(value) => {
+              changeSetting(downloadConcurrency, value);
             }}
           />
         </div>
