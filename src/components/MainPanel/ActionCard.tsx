@@ -23,11 +23,12 @@ function ActionCard({ changeConv }: ActionCardProps) {
           style={{ width: 200 }}
           onChange={(value) => changeConv(value as string)}
         >
-          <Select.Option key="-1" value="-1">
+          <Select.Option className="dd:justify-start!" key="-1" value="-1">
             所有对话
           </Select.Option>
           {convMessageList.map((item) => (
             <Select.Option
+              className="dd:justify-start!"
               key={item.conversation_id}
               value={item.conversation_id}
             >
