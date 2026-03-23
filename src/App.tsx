@@ -65,7 +65,7 @@ function App() {
           content: (
             <>
               <div>
-                捕获到{newConv.length}张图片，
+                捕获到{newConv.filter((item) => item.creation).length}张图片，
                 <Typography.Text link onClick={() => handleDownload(newConv)}>
                   点击此处下载图片
                 </Typography.Text>
