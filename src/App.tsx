@@ -98,7 +98,7 @@ function App() {
         return;
       }
       const downloadedArray =
-        setting.filter((item) => item.key === "skip_downloaded") || false
+        setting.find((item) => item.key === 'skip_downloaded')?.value || false
           ? await db.downloaded.toArray()
           : [];
       const downloadedUrl = new Set(downloadedArray.map((item) => item.url));
@@ -137,6 +137,9 @@ function App() {
         return;
       }
       download(downloadImages, {
+        concurrency: setting.find(
+          (item) => item.key === "download_concurrency",
+        )?.value || 5,
         onSave() {
           Toast.success("下载完成");
           // 批量添加
@@ -147,6 +150,9 @@ function App() {
               };
             }),
           );
+        },
+        onError(url, error) {
+          Toast.error(`下载图片 ${url} 失败: ${error.message}`);
         },
       });
     },
