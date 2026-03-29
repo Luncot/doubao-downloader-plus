@@ -1,15 +1,26 @@
-![doubao-downloader](https://socialify.git.ci/LauZzL/doubao-downloader/image?custom_language=React&description=1&forks=1&issues=1&language=1&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Dark)
+<div align="center" >
+<img style="display: block; margin: 0 auto; " src="./src/assets/logo.png" width="200" height="200" />
+</div>
+
+<h1 align="center">豆包下载器</h1>
+<p align="center">豆包 AI 无水印资源批量下载浏览器扩展/油猴脚本。</p>
+
+<div align="center">
+
+<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/LauZzL/doubao-downloader?style=for-the-badge">
+<a href="https://github.com/LauZzL/doubao-downloader/releases/latest">
+<img alt="GitHub Release" src="https://img.shields.io/github/v/release/LauZzL/doubao-downloader?style=for-the-badge">
+</a>
+<img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/LauZzL/doubao-downloader/total?style=for-the-badge">
+
+</div>
 
 > [!WARNING]
 > 该分支处于实验阶段，1.x 版本中的部分功能仍未移植到该分支中，你可以在 TODO Tree 中查看未完成的功能。
 
-## 项目介绍
-
-**基于 React 开发的豆包 AI 无水印资源批量下载浏览器扩展/油猴脚本。**
-
 ## 开始使用
 
-你可以拉取代码自行构建或到[Releases](https://github.com/LauZzL/doubao-downloader/releases)下载构建好的文件。
+你可以拉取代码自行构建或到[Releases](https://github.com/LauZzL/doubao-downloader/releases/latest)下载构建好的文件。
 
 > 构建后的文件位于 `dist` 目录下。
 
@@ -18,7 +29,6 @@
 > 如果你的浏览器已经安装了油猴插件，那么你可以在 `Releases` 中点击 `doubao-downloader.user.js` 即可自动跳转至安装页面(这可能需要你有良好的网络环境)。
 
 将 `doubao-downloader.user.js` 添加到油猴扩展中使用。
-
 
 ### 以浏览器扩展形式使用
 
@@ -32,11 +42,12 @@
 
 > `.crx` 文件暂时无法拖入安装，安装后可能无法正常使用。
 
-
-
 ## 常见问题
 
 ### 1. 安装成功还是有水印？
+
+> [!NOTE]
+> 我们考虑在 `2.0.0` 版本中添加配置项，用于在部分情况下将两张图片进行拼接，以去除水印。
 
 > 请先查看该issue：[“AI生成”字样能去除吗？ #7](https://github.com/LauZzL/doubao-downloader/issues/7)
 
@@ -58,12 +69,12 @@
 
 ![fte807e.png](https://iili.io/fte807e.png)
 
-
 ## 开发环境
 
 - [React 19](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS 4](https://tailwindcss.com/)
+- [vite-plugin-monkey](https://github.com/lisonge/vite-plugin-monkey)
 
 ## 参与开发
 
