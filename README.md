@@ -1,12 +1,26 @@
-![doubao-downloader](https://socialify.git.ci/LauZzL/doubao-downloader/image?custom_language=React&description=1&forks=1&issues=1&language=1&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Dark)
+<div align="center" >
+<img style="display: block; margin: 0 auto; " src="./src/assets/logo.png" width="200" height="200" />
+</div>
 
-## 项目介绍
+<h1 align="center">豆包下载器</h1>
+<p align="center">豆包 AI 无水印资源批量下载浏览器扩展/油猴脚本。</p>
 
-**基于 React 开发的豆包 AI 无水印资源批量下载浏览器扩展/油猴脚本。**
+<div align="center">
+
+<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/LauZzL/doubao-downloader?style=for-the-badge">
+<a href="https://github.com/LauZzL/doubao-downloader/releases/latest">
+<img alt="GitHub Release" src="https://img.shields.io/github/v/release/LauZzL/doubao-downloader?style=for-the-badge">
+</a>
+<img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/LauZzL/doubao-downloader/total?style=for-the-badge">
+
+</div>
+
+> [!WARNING]
+> 该分支处于实验阶段，1.x 版本中的部分功能仍未移植到该分支中，你可以在 TODO Tree 中查看未完成的功能。
 
 ## 开始使用
 
-你可以拉取代码自行构建或到[Releases](https://github.com/LauZzL/doubao-downloader/releases)下载构建好的文件。
+你可以拉取代码自行构建或到[Releases](https://github.com/LauZzL/doubao-downloader/releases/latest)下载构建好的文件。
 
 > 构建后的文件位于 `dist` 目录下。
 
@@ -15,7 +29,6 @@
 > 如果你的浏览器已经安装了油猴插件，那么你可以在 `Releases` 中点击 `doubao-downloader.user.js` 即可自动跳转至安装页面(这可能需要你有良好的网络环境)。
 
 将 `doubao-downloader.user.js` 添加到油猴扩展中使用。
-
 
 ### 以浏览器扩展形式使用
 
@@ -29,11 +42,12 @@
 
 > `.crx` 文件暂时无法拖入安装，安装后可能无法正常使用。
 
-
-
 ## 常见问题
 
 ### 1. 安装成功还是有水印？
+
+> [!NOTE]
+> 我们考虑在 `2.0.0` 版本中添加配置项，用于在部分情况下将两张图片进行拼接，以去除水印。
 
 > 请先查看该issue：[“AI生成”字样能去除吗？ #7](https://github.com/LauZzL/doubao-downloader/issues/7)
 
@@ -41,31 +55,38 @@
 
 ### 2. 图像生成的区域重绘、智能编辑、变清晰等功能无法获取无水印图片
 
-这几个功能不会返回无水印图片。
+这几个功能不会返回无水印图片，如果你想对已经生成的图片二次编辑，建议将图片保存至本地后携带图片进行提交或在对话中直接描述，而不是使用 `图像生成的区域重绘` 、`智能编辑` 、`变清晰` 等功能，这样可以获得二次编辑后的原图。
+
+例如：在对话中输入将第N张图片变清晰，而不是使用功能区按钮操作。
 
 ### 3. 无水印视频可以下载吗
 
-插件不支持视频下载，但可以使用手机下载。详情见：[Issue #6](https://github.com/LauZzL/doubao-downloader/issues/6)
+> 参考 TODO TREE
 
+插件在2.0.0正式版本中会支持视频捕获，目前已支持视频捕获相关参数提取以及面板展示，如果你想协助参与项目开发，请自行 fork 项目并提交 PR。
+
+## 4. 提示下载成功仍处于下载状态？
+
+使用具有 `DISABLE CSP` 功能的扩展程序禁用 CSP，但绝大部分情况你可以刷新页面重试。
+
+## TODOs
+
+- [x] 视频提取方法抽取
+- [x] 播放功能实现
+- [x] 适配视频下载功能
+- [ ] 重构已下载图片唯一标识，从URL改为key or other?
+- [x] 已下载图片展示标识(在面板图片列表中添加`已下载`标识)
+ 
 ## 预览
 
-#### 对话实时获取
-
-![KOLmij1.gif](https://iili.io/KOLmij1.gif)
-
-#### 无水印预览
-
-![KOLyuON.png](https://iili.io/KOLyuON.png)
-
-#### 所有图片
-
-![KOLQdZJ.gif](https://iili.io/KOLQdZJ.gif)
+![fte807e.png](https://iili.io/fte807e.png)
 
 ## 开发环境
 
 - [React 19](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS 4](https://tailwindcss.com/)
+- [vite-plugin-monkey](https://github.com/lisonge/vite-plugin-monkey)
 
 ## 参与开发
 
