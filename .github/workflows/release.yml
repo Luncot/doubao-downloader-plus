@@ -23,8 +23,11 @@ jobs:
         with:
           version: latest
 
+      - name: Approve build scripts
+        run: pnpm approve-builds esbuild
+
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build project
         run: pnpm build
