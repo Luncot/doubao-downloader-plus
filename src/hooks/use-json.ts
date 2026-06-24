@@ -28,8 +28,8 @@ function findAllKeysInJson(obj: object, key: string): any[] {
 
 function showRawImage(image: any) {
   if (!image) return;
-  const rawImage = image.image_ori_raw?.url;
-  if (rawImage || rawImage.includes("watermark")) {
+  const rawImage = image.image_ori_raw?.url as string;
+  if (rawImage && !rawImage.includes("watermark")) {
     if (image.image_ori) image.image_ori.url = rawImage;
     if (image.image_preview) image.image_preview.url = rawImage;
     if (image.image_thumb) image.image_thumb.url = rawImage;
