@@ -26,3 +26,7 @@ dist-ssr
 # chrome extention
 *.crx
 *.pem
+
+# Lock files (use pnpm)
+package-lock.json
+yarn.lock
