@@ -14,6 +14,8 @@ import { SettingContext } from "./context/SettingContext";
 import { useLiveQuery } from "dexie-react-hooks";
 import { completeSuffix, replaceTemplate } from "./utils/common";
 import { getVideoUrl } from "@/api/video";
+import { use15s } from "./hooks/use-15s";
+import { useInjectButtons } from "./hooks/use-inject-buttons";
 
 function App() {
   const [isOpenMainPanel, setIsOpenMainPanel] = useState(false);
@@ -25,6 +27,10 @@ function App() {
     currentPage: 1,
     pageSize: 12,
   });
+
+  // 15秒视频生成 + 视频下载按钮
+  use15s();
+  useInjectButtons();
 
   useEffect(() => {
     Notification.config({
