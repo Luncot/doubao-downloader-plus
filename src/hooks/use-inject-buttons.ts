@@ -156,49 +156,7 @@ export function useInjectButtons(onDownload?: MediaCallback) {
       }, duration);
     }
 
-    // ========== 注入图片下载按钮 ==========
-
-    function injectImageButton(img: HTMLImageElement) {
-      if (injectedRef.current.has(img)) return;
-      injectedRef.current.add(img);
-
-      // 找外层容器设为 position:relative
-      let container: HTMLElement | null = img.parentElement;
-      for (let i = 0; i < 5 && container; i++) {
-        if (container !== document.body) break;
-        container = container.parentElement;
-      }
-      if (!container || container === document.body) return;
-      if (
-        getComputedStyle(container).position === "static" ||
-        !getComputedStyle(container).position
-      ) {
-        container.style.position = "relative";
-      }
-
-      const btn = createDownloadButton("⬇️ 下载", (e) => {
-        e.stopPropagation();
-
-        // 优先用 img 当前 src
-        let url = img.src;
-        // 尝试从 data-src 或其它属性找高清图
-        const dataSrc =
-          img.getAttribute("data-src") || img.getAttribute("data-original");
-        if (dataSrc) url = dataSrc;
-
-        if (url && url.startsWith("http")) {
-          const name = `doubao_img_${Date.now()}.png`;
-          downloadUrl(url, name);
-        } else {
-          // 通知上层去捕获
-          toast("无法获取图片 URL");
-        }
-      });
-
-      container.appendChild(btn);
-    }
-
-    // ========== 视频下载按钮 ==========
+    // ========== 视频下载按钮（图片下载走上游面板） ==========
 
     /** 全局 vid 缓存（按 messageId） */
     const vidCache = new Map<string, string>();
@@ -416,45 +374,33 @@ export function useInjectButtons(onDownload?: MediaCallback) {
       container.appendChild(btn);
     }
 
-    // ========== DOM 监控 ==========
+    // ========== DOM 监控（只监控视频，图片走上游面板） ==========
 
-    function scanImages() {
-      let count = 0;
-      document.querySelectorAll("img").forEach((img) => {
-        if (img.offsetWidth < 80 || img.offsetHeight < 80) return;
-        if (injectedRef.current.has(img)) return;
-        injectImageButton(img);
-        count++;
-      });
-      if (count > 0) console.log("[注入] 图片按钮已注入:", count);
+    /** 查找可注入按钮的视频容器 */
+    function findVideoContainer(el: Element): Element | null {
+      // 直接 <video> 的父级容器
+      let parent = el.parentElement;
+      for (let i = 0; i < 8 && parent; i++) {
+        if (parent === document.body) break;
+        // 找到包含 video-player 或 block-video 关键字的容器
+        const cn = typeof parent.className === "string" ? parent.className : "";
+        if (cn.includes("video-player") || cn.includes("block-video") || cn.includes("xgplayer")) {
+          return parent;
+        }
+        parent = parent.parentElement;
+      }
+      // 兜底：video 的直接父级
+      return el.parentElement !== document.body ? el.parentElement : el;
     }
 
+    let videoScanTimer = 0;
     function scanVideos() {
-      // 查找视频容器
-      const videoContainers = document.querySelectorAll(
-        '[class*="block-video"], [class*="video-block"], [class*="video-container"]'
-      );
-      videoContainers.forEach((el) => {
-        if (injectedRef.current.has(el)) return;
-        injectVideoButton(el);
-      });
-
-      // 也找直接 <video> 标签
       document.querySelectorAll("video").forEach((video) => {
-        let parent = video.parentElement;
-        for (let i = 0; i < 5 && parent; i++) {
-          if (
-            parent.className &&
-            typeof parent.className === "string" &&
-            (parent.className.includes("block-video") ||
-              parent.className.includes("video"))
-          ) {
-            if (!injectedRef.current.has(parent)) {
-              injectVideoButton(parent);
-            }
-            return;
-          }
-          parent = parent.parentElement;
+        if (injectedRef.current.has(video)) return;
+        const container = findVideoContainer(video);
+        if (container && !injectedRef.current.has(container)) {
+          injectVideoButton(container);
+          injectedRef.current.add(video);
         }
       });
     }
@@ -466,23 +412,12 @@ export function useInjectButtons(onDownload?: MediaCallback) {
         setTimeout(waitBody, 200);
         return;
       }
-
-      // 先扫一遍
-      setTimeout(() => {
-        scanImages();
-        scanVideos();
-      }, 1000);
-
+      setTimeout(scanVideos, 1000);
       observer = new MutationObserver(() => {
-        scanImages();
-        scanVideos();
+        clearTimeout(videoScanTimer);
+        videoScanTimer = window.setTimeout(scanVideos, 300);
       });
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["src"],
-      });
+      observer.observe(document.body, { childList: true, subtree: true });
     };
 
     if (document.readyState === "loading") {
