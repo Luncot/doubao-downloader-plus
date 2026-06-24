@@ -16,8 +16,6 @@ export function useInjectButtons(onDownload?: MediaCallback) {
   const processedVideoMessagesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!onDownload) return;
-
     // ========== 工具函数 ==========
 
     /** 从元素向上查找 messageId */
