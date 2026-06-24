@@ -16,6 +16,8 @@ export function useInjectButtons(onDownload?: MediaCallback) {
   const processedVideoMessagesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
+    console.log("[注入] useInjectButtons 已启动");
+
     // ========== 工具函数 ==========
 
     /** 从元素向上查找 messageId */
@@ -61,9 +63,9 @@ export function useInjectButtons(onDownload?: MediaCallback) {
         padding: "4px 10px",
         minWidth: "72px",
         textAlign: "center",
-        background: "rgba(0, 0, 0, 0.55)",
+        background: "rgba(220, 38, 38, 0.8)",
         color: "white",
-        border: "1px solid rgba(255,255,255,0.3)",
+        border: "1px solid white",
         borderRadius: "6px",
         fontSize: "12px",
         fontWeight: "500",
@@ -278,14 +280,44 @@ export function useInjectButtons(onDownload?: MediaCallback) {
 
     function injectVideoButton(container: Element) {
       if (injectedRef.current.has(container)) return;
+      if (!(container instanceof HTMLElement)) return;
       injectedRef.current.add(container);
 
       const msgId = findMessageId(container);
 
-      // 确保容器有 position
-      (container as HTMLElement).style.position = "relative";
+      // 按钮直接贴在容器底部（用极高 z-index 穿透 xgplayer）
+      const btn = document.createElement("button");
+      btn.textContent = "⬇️ 下载视频";
+      container.style.position = "relative";
+      container.style.overflow = "visible";
+      Object.assign(btn.style, {
+        position: "absolute",
+        bottom: "10px",
+        right: "10px",
+        zIndex: "9999999",
+        padding: "6px 14px",
+        minWidth: "82px",
+        textAlign: "center",
+        background: "rgba(0, 0, 0, 0.65)",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        fontSize: "12px",
+        fontWeight: "500",
+        cursor: "pointer",
+        backdropFilter: "blur(4px)",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif',
+        lineHeight: "20px",
+        whiteSpace: "nowrap",
+        pointerEvents: "auto",
+        opacity: "0.9",
+        transition: "all 0.2s",
+      });
+      btn.addEventListener("mouseenter", () => { btn.style.opacity = "1"; btn.style.background = "rgba(37, 99, 235, 0.9)"; });
+      btn.addEventListener("mouseleave", () => { if (!btn.dataset.doubaoSuccess) { btn.style.opacity = "0.9"; btn.style.background = "rgba(0, 0, 0, 0.65)"; } });
+      container.appendChild(btn);
 
-      const btn = createDownloadButton("⬇️ 下载视频", async (e) => {
+      btn.addEventListener("click", async (e) => {
         e.stopPropagation();
         btn.textContent = "⏳ 获取中...";
         btn.style.opacity = "1";
@@ -299,18 +331,14 @@ export function useInjectButtons(onDownload?: MediaCallback) {
         let usedMethod = "none";
 
         try {
-          // 1. 找 vid
           const found = lookupVid(msgId);
           if (found?.vid) {
             console.log("[video] 找到 vid:", found.vid, "msgId:", found.msgId);
-
-            // 2. get_play_info API
             console.log("[video] → 尝试 get_play_info...");
             finalUrl = await fetchCleanVideoUrl(found.vid);
             if (finalUrl) usedMethod = "get_play_info";
             else console.warn("[video] get_play_info 失败");
 
-            // 3. share_save 备用
             if (!finalUrl && found.msgId) {
               console.log("[video] → 尝试 share_save...");
               finalUrl = await fetchVideoViaShare(found.msgId, found.vid);
@@ -318,8 +346,6 @@ export function useInjectButtons(onDownload?: MediaCallback) {
             }
           } else {
             console.warn("[video] 未找到 vid，尝试全局缓存取最后一个vid");
-
-            // 4. 尝试全局缓存中的任意 vid
             const gc = (window as any).__doubaoVidCache as Map<string, string> | undefined;
             if (gc && gc.size > 0) {
               const last = Array.from(gc.entries()).pop()!;
@@ -328,7 +354,6 @@ export function useInjectButtons(onDownload?: MediaCallback) {
               if (finalUrl) usedMethod = "get_play_info(fallback)";
             }
 
-            // 5. DOM src 兜底（排除 blob）
             if (!finalUrl) {
               const domUrl = findVideoSrc(container);
               if (domUrl) {
@@ -352,7 +377,7 @@ export function useInjectButtons(onDownload?: MediaCallback) {
             btn.style.opacity = "1";
             setTimeout(() => {
               btn.textContent = "⬇️ 下载视频";
-              btn.style.background = "rgba(0, 0, 0, 0.55)";
+              btn.style.background = "rgba(220, 38, 38, 0.85)";
               btn.style.opacity = "0.9";
               btn.style.pointerEvents = "auto";
               delete btn.dataset.doubaoSuccess;
@@ -370,35 +395,34 @@ export function useInjectButtons(onDownload?: MediaCallback) {
           btn.style.pointerEvents = "auto";
         }
       });
-
-      container.appendChild(btn);
     }
 
     // ========== DOM 监控（只监控视频，图片走上游面板） ==========
 
-    /** 查找可注入按钮的视频容器 */
-    function findVideoContainer(el: Element): Element | null {
-      // 直接 <video> 的父级容器
+    /** 查找可注入按钮的视频容器（必须返回 div，不能是 video 本身） */
+    function findVideoContainer(el: Element): HTMLElement | null {
       let parent = el.parentElement;
       for (let i = 0; i < 8 && parent; i++) {
         if (parent === document.body) break;
-        // 找到包含 video-player 或 block-video 关键字的容器
         const cn = typeof parent.className === "string" ? parent.className : "";
-        if (cn.includes("video-player") || cn.includes("block-video") || cn.includes("xgplayer")) {
+        if (cn.includes("video-player") || cn.includes("block-video") || cn.includes("xgplayer") || cn.includes("video-canvas")) {
           return parent;
         }
         parent = parent.parentElement;
       }
-      // 兜底：video 的直接父级
-      return el.parentElement !== document.body ? el.parentElement : el;
+      // 兜底：video 的直接父级 div
+      if (el.parentElement && el.parentElement !== document.body) return el.parentElement;
+      return el.parentElement;
     }
 
     let videoScanTimer = 0;
     function scanVideos() {
-      document.querySelectorAll("video").forEach((video) => {
+      const videos = document.querySelectorAll("video");
+      videos.forEach((video) => {
         if (injectedRef.current.has(video)) return;
         const container = findVideoContainer(video);
         if (container && !injectedRef.current.has(container)) {
+          console.log("[注入] 视频容器:", container.tagName, container.className?.slice(0, 60));
           injectVideoButton(container);
           injectedRef.current.add(video);
         }
