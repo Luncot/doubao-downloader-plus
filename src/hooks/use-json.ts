@@ -96,10 +96,8 @@ function extractCreations({
 function extractTtsContentText(tts_content: string) {
   try {
     const json = JSON.parse(tts_content);
-    if (json.text) {
-      return json.text;
-    }
-  } catch (error) {
+    return json.text || tts_content;
+  } catch {
     return tts_content;
   }
 }
