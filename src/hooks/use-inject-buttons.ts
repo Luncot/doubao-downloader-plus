@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { getVideoUrl } from "@/api/video";
 
 type MediaCallback = (e: { urls: string[]; type: "image" | "video" }) => void;
 
@@ -348,13 +349,23 @@ export function useInjectButtons(onDownload?: MediaCallback) {
           if (found?.vid) {
             console.log("[video] 找到 vid:", found.vid, "msgId:", found.msgId);
 
-            // 2. get_play_info API
-            console.log("[video] → 尝试 get_play_info...");
-            finalUrl = await fetchCleanVideoUrl(found.vid);
-            if (finalUrl) usedMethod = "get_play_info";
-            else console.warn("[video] get_play_info 失败");
+            // 2. 上游 get_download_info API（最优先）
+            try {
+              console.log("[video] → 尝试 getVideoUrl(get_download_info)...");
+              finalUrl = await getVideoUrl(found.vid);
+              if (finalUrl) usedMethod = "get_download_info";
+            } catch (e) {
+              console.warn("[video] get_download_info 失败:", e);
+            }
 
-            // 3. share_save 备用
+            // 3. get_play_info API（备用）
+            if (!finalUrl) {
+              console.log("[video] → 尝试 get_play_info...");
+              finalUrl = await fetchCleanVideoUrl(found.vid);
+              if (finalUrl) usedMethod = "get_play_info";
+            }
+
+            // 4. share_save 备用
             if (!finalUrl && found.msgId) {
               console.log("[video] → 尝试 share_save...");
               finalUrl = await fetchVideoViaShare(found.msgId, found.vid);
@@ -368,8 +379,8 @@ export function useInjectButtons(onDownload?: MediaCallback) {
             if (gc && gc.size > 0) {
               const last = Array.from(gc.entries()).pop()!;
               console.log("[video] 从全局缓存取 vid:", last[1], "msgId:", last[0]);
-              finalUrl = await fetchCleanVideoUrl(last[1]);
-              if (finalUrl) usedMethod = "get_play_info(fallback)";
+              try { finalUrl = await getVideoUrl(last[1]); if (finalUrl) usedMethod = "get_download_info(fallback)"; } catch {}
+              if (!finalUrl) { finalUrl = await fetchCleanVideoUrl(last[1]); if (finalUrl) usedMethod = "get_play_info(fallback)"; }
             }
 
             // 5. DOM src 兜底（排除 blob）
