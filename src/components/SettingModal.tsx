@@ -35,7 +35,6 @@ function SettingModal({ isOpenSetting, onCloseSetting }: SettingModalProps) {
   const downloadConcurrency = getSetting("download_concurrency");
   const customFilenameTemplate = getSetting("custom_filename_template");
   const createFolder = getSetting("create_folder");
-  const enable15sVideo = getSetting("enable_15s_video");
   const downloadByDisplayOrder = getSetting("download_by_display_order");
 
   const customFilenameTemplateLocal = useSetting(customFilenameTemplate, changeSetting);
@@ -85,16 +84,6 @@ function SettingModal({ isOpenSetting, onCloseSetting }: SettingModalProps) {
             checked={createFolder?.value}
             onChange={(checked) => {
               changeSetting(createFolder, checked);
-            }}
-          />
-        </div>
-
-        <div className="dd:flex dd:flex-row dd:items-center dd:gap-2">
-          <label className="dd:text-sm">{enable15sVideo?.label}</label>
-          <Switch
-            checked={enable15sVideo?.value}
-            onChange={(checked) => {
-              changeSetting(enable15sVideo, checked);
             }}
           />
         </div>
