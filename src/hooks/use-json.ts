@@ -109,6 +109,7 @@ function updateVideoDuration(
     const abilityParam = JSON.parse(chatAbility.ability_param || "{}");
     abilityParam.duration = 15;
     chatAbility.ability_param = JSON.stringify(abilityParam);
+    console.log("[15s] ✅ JSON.stringify 注入成功, duration=15");
     onSuccess?.();
   } catch (error) {
     onError?.(error);
