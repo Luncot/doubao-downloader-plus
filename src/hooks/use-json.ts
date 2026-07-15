@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import type { ConvMessage } from "@/types";
 
+// 全局 vid 缓存（供视频下载按钮使用）
+if (!(window as any).__doubaoVidCache) {
+  (window as any).__doubaoVidCache = new Map<string, string>();
+}
+
 interface UseJsonProps {
   showRaw?: boolean;
   enable15sVideo?: boolean;
@@ -55,6 +60,11 @@ function extractCreations({
     creations.forEach(async (creation: any) => {
       const isVideoCreation = creation.video && creation.video.vid && true;
       if (isVideoCreation) {
+        // 缓存 vid 供下载按钮使用
+        const vc = (window as any).__doubaoVidCache as Map<string, string>;
+        const msgId = baseInfo?.message_id || "";
+        if (msgId) vc.set(msgId, creation.video.vid);
+
         result.push({
           ...baseInfo,
           creation: {
