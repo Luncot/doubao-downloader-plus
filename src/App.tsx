@@ -45,15 +45,18 @@ function App() {
   const setting =
     useLiveQuery(() => db.setting.toArray(), []) || ([] as Setting[]);
 
-  const updateSetting = useCallback((item: Setting) => {
-    db.setting
-      .update(item.id, {
-        key: item.key,
-        value: item.value,
-      })
-      .then((e) => {
-        !e && Toast.error("设置失败");
-      });
+  const updateSetting = useCallback(async (item: Setting) => {
+    if (item.id) {
+      const updated = await db.setting.update(item.id, { key: item.key, value: item.value });
+      if (!updated) Toast.error("设置失败");
+    } else {
+      const existing = await db.setting.where("key").equals(item.key).first();
+      if (existing) {
+        await db.setting.update(existing.id!, { value: item.value });
+      } else {
+        await db.setting.add({ key: item.key, value: item.value, label: item.label });
+      }
+    }
   }, []);
 
   useJson({
