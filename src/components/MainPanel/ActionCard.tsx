@@ -32,7 +32,7 @@ function ActionCard({ changeConv }: ActionCardProps) {
               key={item.conversation_id}
               value={item.conversation_id}
             >
-              {item.tts_content?.length > 30 ? item.tts_content.slice(0, 30) + "…" : item.tts_content || "未命名对话"}
+              {item.tts_content?.replace(/^生成[：:]?\s*/,"").slice(0, 28) || "对话 " + item.conversation_id?.slice(-8)}
             </Select.Option>
           ))}
         </Select>

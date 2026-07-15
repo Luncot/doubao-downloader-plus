@@ -10,11 +10,10 @@ export function use15sToggle() {
     const btn = document.createElement("div");
     function updateUI(on: boolean) { btn.textContent = on ? "15s ON" : "15s OFF"; btn.style.background = on ? "#2563eb" : "#6b7280"; }
 
-    // 读取并监听 DB 变化（与面板同步）
-    function readAndUpdate() { db.setting.where("key").equals(KEY).first().then(s => updateUI(s?.value !== false)); }
+    // 读取并定时刷新（与面板同步）
+    function readAndUpdate() { db.setting.where("key").equals(KEY).first().then(s => updateUI(s?.value !== false)).catch(() => {}); }
     readAndUpdate();
-    const hook = db.setting.hook('updating', (_, primKey, obj) => { if (obj.key === KEY) updateUI(obj.value !== false); });
-    const hook2 = db.setting.hook('creating', (_, obj) => { if ((obj as any).key === KEY) updateUI((obj as any).value !== false); });
+    const syncTimer = setInterval(readAndUpdate, 3000);
     Object.assign(btn.style, {
       position: "fixed" as const, bottom: "90px", right: "20px",
       zIndex: "99999", padding: "4px 12px", borderRadius: "14px",
@@ -38,6 +37,6 @@ export function use15sToggle() {
       setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2000);
     };
     document.body.appendChild(btn);
-    return () => { btn.remove(); hook(); hook2(); };
+    return () => { btn.remove(); clearInterval(syncTimer); };
   }, []);
 }
