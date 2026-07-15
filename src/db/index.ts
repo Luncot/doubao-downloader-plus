@@ -1,11 +1,24 @@
 import type { Setting } from "@/types";
-import { Dexie, type EntityTable } from "dexie";
+import Dexie, { type EntityTable } from "dexie";
 
-export const db = new Dexie("DouBaoDownloader") as Dexie & {
+const DB_NAME = "DouBaoDownloader";
+
+const _old_db = new Dexie(DB_NAME) as Dexie & {
+  downloaded: EntityTable<{ id: number; url: string }, 'id'>;
+  setting: EntityTable<{ id: number; key: string; value: any }, 'id'>;
+};
+
+_old_db.version(1).stores({
+  downloaded: "++id, url",
+  setting: "id, key, value",
+});
+
+export const db = new Dexie(DB_NAME) as Dexie & {
   downloaded: EntityTable<{ id: number; url: string }, "id">;
   setting: EntityTable<Setting, "id">;
 };
-db.version(1).stores({
+
+db.version(2).stores({
   downloaded: "++id, url",
   setting: "++id, &key, value",
 });
@@ -37,6 +50,16 @@ export const SETTING_DEFAULTS: Setting[] = [
     value: false,
     label: "为会话创建文件夹",
   },
+  {
+    key: "enable_15s_video",
+    value: true,
+    label: "开启15秒视频",
+  },
+  {
+    key: "download_by_display_order",
+    value: false,
+    label: "按展示顺序下载",
+  },
 ];
 
 export class SettingService {
@@ -52,4 +75,21 @@ export class SettingService {
       }
     }
   }
+
+
+  /**
+   * 恢复数据库
+   */
+  async reStoreDatabase() {
+    await _old_db.open();
+    const downloadedData = await _old_db.downloaded.toArray();
+    _old_db.close();
+    await Dexie.delete(DB_NAME);
+    await db.open();
+    if (downloadedData.length > 0) {
+      await db.downloaded.bulkAdd(downloadedData.map((item) => ({ url: item.url })));
+    }
+    await this.initDB();
+  }
+
 }

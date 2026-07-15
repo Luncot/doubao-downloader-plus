@@ -1,4 +1,4 @@
-export type SettingKey = "show_raw" | "skip_downloaded" | "download_concurrency" | "custom_filename_template" | "create_folder";
+export type SettingKey = "show_raw" | "skip_downloaded" | "download_concurrency" | "custom_filename_template" | "create_folder" | "enable_15s_video" | "download_by_display_order";
 export type Setting = {
   id?: number;
   key: SettingKey;
@@ -53,6 +53,8 @@ export type ConvFilter = {
   showConvId: string;
   currentPage: number;
   pageSize: number;
+  startTime?: number;
+  endTime?: number;
 };
 
 declare global {
@@ -60,6 +62,7 @@ declare global {
   const __BUILD_TIME__: string;
   interface Window {
     origin_parse: (data: string) => any;
+    origin_stringify: typeof JSON.stringify;
     ZIP: any;
   }
 }
