@@ -6,11 +6,15 @@ const KEY = "enable_15s_video";
 export function use15sToggle() {
   useEffect(() => {
     if (!document.body) return;
-    let currentOn = true;
-    db.setting.where("key").equals(KEY).first().then(s => { currentOn = s?.value !== false; updateUI(currentOn); });
 
     const btn = document.createElement("div");
     function updateUI(on: boolean) { btn.textContent = on ? "15s ON" : "15s OFF"; btn.style.background = on ? "#2563eb" : "#6b7280"; }
+
+    // 读取并监听 DB 变化（与面板同步）
+    function readAndUpdate() { db.setting.where("key").equals(KEY).first().then(s => updateUI(s?.value !== false)); }
+    readAndUpdate();
+    const hook = db.setting.hook('updating', (_, primKey, obj) => { if (obj.key === KEY) updateUI(obj.value !== false); });
+    const hook2 = db.setting.hook('creating', (_, obj) => { if ((obj as any).key === KEY) updateUI((obj as any).value !== false); });
     Object.assign(btn.style, {
       position: "fixed" as const, bottom: "90px", right: "20px",
       zIndex: "99999", padding: "4px 12px", borderRadius: "14px",
@@ -34,6 +38,6 @@ export function use15sToggle() {
       setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2000);
     };
     document.body.appendChild(btn);
-    return () => btn.remove();
+    return () => { btn.remove(); hook(); hook2(); };
   }, []);
 }

@@ -93,12 +93,13 @@ function extractCreations({
   return result;
 }
 
-function extractTtsContentText(tts_content: string) {
+function extractTtsContentText(tts_content: any): string {
+  if (!tts_content) return "";
   try {
     const json = JSON.parse(tts_content);
-    return json.text || tts_content;
+    return json?.text || String(tts_content);
   } catch {
-    return tts_content;
+    return String(tts_content);
   }
 }
 

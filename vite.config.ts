@@ -21,7 +21,6 @@ export default defineConfig({
         match: ["https://www.doubao.com/chat/*"],
         "run-at": "document-start",
         grant: "none",
-        require: "https://raw.githubusercontent.com/Luncot/doubao-downloader-plus/main/semi-fix.js",
       },
     }),
     viteStaticCopy({
