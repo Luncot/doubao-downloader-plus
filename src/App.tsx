@@ -6,7 +6,7 @@ import { ConvFilter, ConvMessage, Creation, Setting } from "./types";
 import { ConvContext } from "./context/ConvContext";
 import { ConvFilterContext } from "./context/ConvFilterContext";
 import { useDownload } from "./hooks/use-download";
-import { Notification, Toast, Typography } from "@douyinfe/semi-ui-19";
+import { Button, Notification, Toast, Typography } from "@douyinfe/semi-ui-19";
 import ProgressModal from "./components/ProgressModal";
 import { db, SettingService } from "./db";
 import SettingModal from "./components/SettingModal";
@@ -14,10 +14,10 @@ import { SettingContext } from "./context/SettingContext";
 import { useLiveQuery } from "dexie-react-hooks";
 import { completeSuffix, replaceTemplate } from "./utils/common";
 import { getVideoUrl } from "@/api/video";
-import { use15s } from "./hooks/use-15s";
 import { useInjectButtons } from "./hooks/use-inject-buttons";
 
 function App() {
+  useInjectButtons();
   const [isOpenMainPanel, setIsOpenMainPanel] = useState(false);
   const [isOpenSetting, setIsOpenSetting] = useState(false);
   const [convMessageList, setConvMessageList] = useState<ConvMessage[]>([]);
@@ -28,16 +28,41 @@ function App() {
     pageSize: 12,
   });
 
-  // 15秒视频生成 + 视频下载按钮
-  use15s();
-  useInjectButtons();
+  const { Text } = Typography;
 
   useEffect(() => {
     Notification.config({
       position: "bottomRight",
     });
     const settingService = new SettingService();
-    settingService.initDB();
+    settingService.initDB().catch((err) => {
+      console.error(`init db error: `, err);
+      Notification.error({
+        title: "数据库异常",
+        content: (
+          <Typography>
+            <Text>初始化数据库失败,请在IndexedDB中删除DouBao-Downloader后刷新页面重试</Text>
+            <br />
+            <br />
+            <Button theme="solid" onClick={() => {
+              settingService.reStoreDatabase().then(() => {
+                Toast.success("数据库已重置,3秒后自动刷新页面");
+                setTimeout(() => {
+                  window.location.reload();
+                }, 3000);
+              }).catch((err) => {
+                Toast.error("数据库重置失败,请在控制台查看详细错误");
+                console.error(`reStoreDatabase error: `, err);
+              });
+            }} type="danger">
+              点击重置数据库(这可能会导致资源下载记录丢失)
+            </Button>
+          </Typography>
+        ),
+        duration: 0,
+        position: "bottomRight",
+      });
+    })
   }, []);
 
   const { download, progress, isDownloading } = useDownload();
@@ -51,17 +76,27 @@ function App() {
       if (!updated) Toast.error("设置失败");
     } else {
       const existing = await db.setting.where("key").equals(item.key).first();
-      if (existing) {
-        await db.setting.update(existing.id!, { value: item.value });
-      } else {
-        await db.setting.add({ key: item.key, value: item.value, label: item.label });
-      }
+      if (existing) await db.setting.update(existing.id!, { value: item.value });
+      else await db.setting.add({ key: item.key, value: item.value, label: item.label });
     }
+  }, []);
+
+  const handleUpdateVideoDurationSuccess = useCallback(() => {
+    Toast.success("已将视频生成时长修改为15秒");
+  }, []);
+
+  const handleUpdateVideoDurationError = useCallback((error: unknown) => {
+    Toast.error("修改视频生成时长失败，请在控制台查看详细错误");
+    console.error("updateVideoDuration error:", error);
   }, []);
 
   useJson({
     showRaw:
-      setting.find((item: Setting) => item.key === "show_raw")?.value || false,
+      setting.find((item: Setting) => item.key === "show_raw")?.value ?? false,
+    enable15sVideo:
+      setting.find((item: Setting) => item.key === "enable_15s_video")?.value ?? true,
+    onUpdateVideoDurationSuccess: handleUpdateVideoDurationSuccess,
+    onUpdateVideoDurationError: handleUpdateVideoDurationError,
     callback: (convMessages: ConvMessage[]) => {
       setConvMessageList((prev) => {
         const newConv = convMessages.filter(
@@ -97,6 +132,8 @@ function App() {
               </div>
             </>
           ),
+          duration: 10,
+          showClose: true,
           position: "bottomRight",
         });
         return [...prev, ...newConv];
@@ -132,11 +169,25 @@ function App() {
         "${conversation_id}_${message_id}_${index_in_conv}_${creation.image.key}";
       const createFolder =
         setting.find((item) => item.key === "create_folder")?.value || false;
+      const downloadByDisplayOrder =
+        setting.find((item) => item.key === "download_by_display_order")?.value || false;
 
       const validConvs = convMessages.filter(
         (conv): conv is ConvMessage & { creation: Creation } =>
           conv.creation != null,
       );
+
+      const displayOrderMap = new Map(
+        validConvs.map((conv, index) => [conv.creation.image.key, index + 1]),
+      );
+      const withDisplayOrder = (
+        filename: string,
+        conv: ConvMessage & { creation: Creation },
+      ) => {
+        if (!downloadByDisplayOrder) return filename;
+        const order = displayOrderMap.get(conv.creation.image.key);
+        return order ? `${order}-${filename}` : filename;
+      };
 
       const imageConvs = validConvs.filter(
         (conv) => conv.creation.creation_type === "image",
@@ -163,10 +214,13 @@ function App() {
           message_id: conv.message_id,
           key: conv.creation.image.key.replace(/\//g, "_"),
           url: conv.creation.image.image_ori_raw.url,
-          filename: completeSuffix(
-            replaceTemplate(customFilenameTemplate, conv),
-            "png",
-          ).replace(/\//g, "_"),
+          filename: withDisplayOrder(
+            completeSuffix(
+              replaceTemplate(customFilenameTemplate, conv),
+              "png",
+            ).replace(/\//g, "_"),
+            conv,
+          ),
           folder: createFolder ? conv.tts_content + "/" : "",
         }));
 
@@ -181,10 +235,13 @@ function App() {
               message_id: conv.message_id,
               key: conv.creation.image.key.replace(/\//g, "_"),
               url: videoUrl,
-              filename: completeSuffix(
-                replaceTemplate(customFilenameTemplate, conv),
-                "mp4",
-              ).replace(/\//g, "_"),
+              filename: withDisplayOrder(
+                completeSuffix(
+                  replaceTemplate(customFilenameTemplate, conv),
+                  "mp4",
+                ).replace(/\//g, "_"),
+                conv,
+              ),
               folder: createFolder ? conv.tts_content + "/" : "",
             });
           }

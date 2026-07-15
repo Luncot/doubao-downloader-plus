@@ -3,6 +3,9 @@ import type { ConvMessage } from "@/types";
 
 interface UseJsonProps {
   showRaw?: boolean;
+  enable15sVideo?: boolean;
+  onUpdateVideoDurationSuccess?: () => void;
+  onUpdateVideoDurationError?: (error: unknown) => void;
   callback: (messages: ConvMessage[]) => void;
 }
 
@@ -93,6 +96,25 @@ function extractCreations({
   return result;
 }
 
+function updateVideoDuration(
+  data: any,
+  enable15sVideo: boolean,
+  onSuccess?: () => void,
+  onError?: (error: unknown) => void,
+) {
+  if (!enable15sVideo) return;
+  const chatAbility = data?.chat_ability;
+  if (chatAbility?.ability_type !== 17) return;
+  try {
+    const abilityParam = JSON.parse(chatAbility.ability_param || "{}");
+    abilityParam.duration = 15;
+    chatAbility.ability_param = JSON.stringify(abilityParam);
+    onSuccess?.();
+  } catch (error) {
+    onError?.(error);
+  }
+}
+
 function extractTtsContentText(tts_content: any): string {
   if (!tts_content) return "";
   try {
@@ -103,11 +125,26 @@ function extractTtsContentText(tts_content: any): string {
   }
 }
 
-export function useJson({ showRaw = true, callback }: UseJsonProps) {
+export function useJson({
+  showRaw = true,
+  enable15sVideo = true,
+  onUpdateVideoDurationSuccess,
+  onUpdateVideoDurationError,
+  callback,
+}: UseJsonProps) {
   const prevMessageIds = useRef<Set<string>>(new Set());
   useEffect(() => {
     const _parse = JSON.parse;
+    const _stringify = JSON.stringify;
     window.origin_parse = JSON.parse;
+    window.origin_stringify = JSON.stringify;
+
+    // JSON.stringify 15s 注入（比 fetch/XHR 钩子更干净）
+    JSON.stringify = ((value: any, replacer?: any, space?: any) => {
+      updateVideoDuration(value, enable15sVideo, onUpdateVideoDurationSuccess, onUpdateVideoDurationError);
+      return _stringify(value, replacer, space);
+    }) as typeof JSON.stringify;
+
     JSON.parse = function (text: string) {
       let jsonData = _parse(text);
       if (!text.includes("creations")) return jsonData;
@@ -167,6 +204,7 @@ export function useJson({ showRaw = true, callback }: UseJsonProps) {
     };
     return () => {
       JSON.parse = window.origin_parse;
+      JSON.stringify = window.origin_stringify;
     };
-  }, [showRaw]);
+  }, [showRaw, enable15sVideo, onUpdateVideoDurationSuccess, onUpdateVideoDurationError]);
 }
