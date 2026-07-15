@@ -21,6 +21,7 @@ export default defineConfig({
         match: ["https://www.doubao.com/chat/*"],
         "run-at": "document-start",
         grant: "none",
+        require: "data:text/javascript,window.__semi_useReact19%3Dtrue",
       },
     }),
     viteStaticCopy({

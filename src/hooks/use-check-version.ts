@@ -34,6 +34,7 @@ export const useCheckVersion = () => {
   useEffect(() => {
     getLatestRelease()
       .then((data) => {
+        if (!data?.tag_name) return;
         const latestVersion = data.tag_name.replace("v", "");
         const isNewVer = isNewVersion(__APP_VERSION__, latestVersion) || false;
         setNewVersion({

@@ -2,9 +2,6 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Semi UI React 19 兼容
-(window as any).__semi_useReact19 = true;
-
 // 清理旧版 IndexedDB（schema 版本不匹配时会导致 init 失败）
 try { indexedDB.deleteDatabase("DouBaoDownloader"); } catch {}
 
