@@ -15,8 +15,10 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { completeSuffix, replaceTemplate } from "./utils/common";
 import { getVideoUrl } from "@/api/video";
 import { useInjectButtons } from "./hooks/use-inject-buttons";
+import { use15sToggle } from "./hooks/use-15s-toggle";
 
 function App() {
+  use15sToggle();
   useInjectButtons();
   const [isOpenMainPanel, setIsOpenMainPanel] = useState(false);
   const [isOpenSetting, setIsOpenSetting] = useState(false);
