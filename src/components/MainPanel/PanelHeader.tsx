@@ -37,7 +37,7 @@ function PanelHeader({
               gradient
               onClick={() =>
                 window.open(
-                  "https://github.com/lauzzl/doubao-downloader/releases/latest",
+                  "https://github.com/Luncot/doubao-downloader-plus/releases/latest",
                   "_blank"
                 )
               }
@@ -54,7 +54,7 @@ function PanelHeader({
               size="small"
               icon={<IconGithubLogo />}
               onClick={() =>
-                window.open("https://github.com/lauzzl/doubao-downloader")
+                window.open("https://github.com/Luncot/doubao-downloader-plus")
               }
             >
               {isMobile ? "" : "Source Code"}

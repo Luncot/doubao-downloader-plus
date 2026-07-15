@@ -18,11 +18,19 @@ export async function getVideoUrl(vid: string | number) {
     body: JSON.stringify({ key: vid, type: "video" }),
   });
   const data = await res.json();
-  if (data?.code === 0 && data.data?.original_media_info?.main_url) {
-    return data.data.original_media_info.main_url.replace(
-      /lr=[^&]+/g,
-      "lr=video_gen_no_watermark"
-    );
+  if (data?.code === 0 && data.data) {
+    // 优先取 original_media_info
+    if (data.data.original_media_info?.main_url) {
+      return data.data.original_media_info.main_url.replace(
+        /lr=[^&]+/g,
+        "lr=video_gen_no_watermark"
+      );
+    }
+    // 回退到 play_infos 或 play_info
+    const playInfo = data.data.play_infos?.[0] || data.data.play_info;
+    if (playInfo?.main) {
+      return playInfo.main.replace(/lr=[^&]+/g, "lr=video_gen_no_watermark");
+    }
   }
   throw new Error("获取播放地址失败");
 }

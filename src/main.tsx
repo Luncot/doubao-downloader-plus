@@ -2,6 +2,9 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
+// Semi UI React 19 兼容
+(window as any).__semi_useReact19 = true;
+
 // @run-at document-start 时 body 可能还不存在
 function mountApp() {
   if (!document.body) {

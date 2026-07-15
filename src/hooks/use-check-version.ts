@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 const getLatestRelease = async () => {
   const response = await fetch(
-    "https://api.github.com/repos/lauzzl/doubao-downloader/releases/latest",
+    "https://api.github.com/repos/Luncot/doubao-downloader-plus/releases/latest",
   );
   const data = await response.json();
   return data;
