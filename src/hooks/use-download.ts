@@ -201,14 +201,17 @@ export function useDownload() {
             }
           }
         } else {
-          // 多张图片打包下载
-          await createZipStream(
-            downloadImageList,
-            "zipName",
-            options.concurrency || 5,
-            handleProgress,
-            onError,
-          );
+          // 多张图片打包下载（加 120s 超时防止卡死）
+          await Promise.race([
+            createZipStream(
+              downloadImageList,
+              "zipName",
+              options.concurrency || 5,
+              handleProgress,
+              onError,
+            ),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("下载超时")), 120000)),
+          ]);
           handleProgress(downloadImageList.length, downloadImageList.length);
           options.onSave?.();
         }
