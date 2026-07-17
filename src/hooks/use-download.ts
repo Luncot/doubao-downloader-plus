@@ -1,9 +1,6 @@
 import { useCallback, useState } from "react";
-import pLimit from "p-limit";
-import streamSaver from "streamsaver";
 import saveAs from "file-saver";
-import "../lib/zip-stream.js";
-import type { DownloadImage, ZipWriter } from "@/types";
+import type { DownloadImage } from "@/types";
 
 interface DownloadOptions {
   concurrency?: number;
@@ -201,18 +198,19 @@ export function useDownload() {
             }
           }
         } else {
-          // 多张图片打包下载（加 120s 超时防止卡死）
-          await Promise.race([
-            createZipStream(
-              downloadImageList,
-              "zipName",
-              options.concurrency || 5,
-              handleProgress,
-              onError,
-            ),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("下载超时")), 120000)),
-          ]);
-          handleProgress(downloadImageList.length, downloadImageList.length);
+          // 逐个下载，更新进度
+          for (let i = 0; i < downloadImageList.length; i++) {
+            const img = downloadImageList[i];
+            try {
+              const resp = await getImageResponse(img.url);
+              const blob = await resp.blob();
+              const name = img.filename || getFileNameFromUrl(img.url);
+              saveAs(blob, name);
+            } catch (e: any) {
+              onError(img.url, e);
+            }
+            handleProgress(i + 1, downloadImageList.length);
+          }
           options.onSave?.();
         }
       } catch (error: any) {
