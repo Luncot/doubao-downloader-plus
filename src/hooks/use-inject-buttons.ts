@@ -29,9 +29,19 @@ export function useInjectButtons() {
       return null;
     }
 
-    function downloadUrl(url: string, _filename: string) {
+    function downloadUrl(url: string, filename: string) {
       if (url.startsWith("blob:")) return;
-      window.open(url, "_blank");
+      // 1. 尝试 fetch+blob 触发下载弹窗
+      fetch(url, { mode: "cors", credentials: "omit" })
+        .then(r => { if (!r.ok) throw Error(); return r.blob(); })
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = blobUrl; a.download = filename;
+          document.body.appendChild(a); a.click();
+          setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 2000);
+        })
+        .catch(() => { window.open(url, "_blank"); });
     }
 
     function toast(msg: string, duration = 2500) {
