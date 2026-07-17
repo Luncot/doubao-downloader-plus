@@ -11,7 +11,7 @@
     ) && (url.includes('.mp4') || url.includes('mime_type=video') || url.includes('/video/'));
     if (isVideoDl) {
       window.postMessage({ type: 'ce_download_video', url, filename: `doubao_video_${Date.now()}.mp4` }, '*');
-      return new Promise(() => {}); // 挂起原 fetch，只走扩展下载
+      return new Promise(() => {});
     }
     return __origFetch.apply(this, arguments);
   };
@@ -423,7 +423,7 @@
     function isValidElement(object) {
       return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
     }
-    function escape2(key2) {
+    function escape(key2) {
       var escaperLookup = { "=": "=0", ":": "=2" };
       return "$" + key2.replace(/[=:]/g, function(match2) {
         return escaperLookup[match2];
@@ -431,7 +431,7 @@
     }
     var userProvidedKeyEscapeRegex = /\/+/g;
     function getElementKey(element, index2) {
-      return "object" === typeof element && null !== element && null != element.key ? escape2("" + element.key) : index2.toString(36);
+      return "object" === typeof element && null !== element && null != element.key ? escape("" + element.key) : index2.toString(36);
     }
     function resolveThenable(thenable) {
       switch (thenable.status) {
@@ -14611,8 +14611,8 @@ isIndex(key2, length)))) {
     if (hasRequired_DataView) return _DataView;
     hasRequired_DataView = 1;
     var getNative = require_getNative(), root = require_root();
-    var DataView2 = getNative(root, "DataView");
-    _DataView = DataView2;
+    var DataView = getNative(root, "DataView");
+    _DataView = DataView;
     return _DataView;
   }
   var _Promise;
@@ -14650,12 +14650,12 @@ isIndex(key2, length)))) {
   function require_getTag() {
     if (hasRequired_getTag) return _getTag;
     hasRequired_getTag = 1;
-    var DataView2 = require_DataView(), Map2 = require_Map(), Promise2 = require_Promise(), Set2 = require_Set(), WeakMap2 = require_WeakMap(), baseGetTag = require_baseGetTag(), toSource = require_toSource();
+    var DataView = require_DataView(), Map2 = require_Map(), Promise2 = require_Promise(), Set2 = require_Set(), WeakMap2 = require_WeakMap(), baseGetTag = require_baseGetTag(), toSource = require_toSource();
     var mapTag = "[object Map]", objectTag = "[object Object]", promiseTag = "[object Promise]", setTag = "[object Set]", weakMapTag = "[object WeakMap]";
     var dataViewTag = "[object DataView]";
-    var dataViewCtorString = toSource(DataView2), mapCtorString = toSource(Map2), promiseCtorString = toSource(Promise2), setCtorString = toSource(Set2), weakMapCtorString = toSource(WeakMap2);
+    var dataViewCtorString = toSource(DataView), mapCtorString = toSource(Map2), promiseCtorString = toSource(Promise2), setCtorString = toSource(Set2), weakMapCtorString = toSource(WeakMap2);
     var getTag2 = baseGetTag;
-    if (DataView2 && getTag2(new DataView2(new ArrayBuffer(1))) != dataViewTag || Map2 && getTag2(new Map2()) != mapTag || Promise2 && getTag2(Promise2.resolve()) != promiseTag || Set2 && getTag2(new Set2()) != setTag || WeakMap2 && getTag2(new WeakMap2()) != weakMapTag) {
+    if (DataView && getTag2(new DataView(new ArrayBuffer(1))) != dataViewTag || Map2 && getTag2(new Map2()) != mapTag || Promise2 && getTag2(Promise2.resolve()) != promiseTag || Set2 && getTag2(new Set2()) != setTag || WeakMap2 && getTag2(new WeakMap2()) != weakMapTag) {
       getTag2 = function(value) {
         var result = baseGetTag(value), Ctor = result == objectTag ? value.constructor : void 0, ctorString = Ctor ? toSource(Ctor) : "";
         if (ctorString) {
@@ -16109,7 +16109,7 @@ isIndex(key2, length)))) {
   function isNullOrUndefined(value) {
     return value === null || value === void 0;
   }
-  let Event$2 = class Event2 {
+  let Event$1 = class Event {
     constructor() {
       this._eventMap = new Map();
     }
@@ -18066,7 +18066,7 @@ transitionState: "",
         displayNone: false
       };
       this.foundation = new Tooltip$1(this.adapter);
-      this.eventManager = new Event$2();
+      this.eventManager = new Event$1();
       this.triggerEl = React__default.createRef();
       this.containerEl = React__default.createRef();
       this.initialFocusRef = React__default.createRef();
@@ -23550,7 +23550,7 @@ componentName: PropTypes.string,
       }
     }
   }
-  let Event$1 = class Event3 {
+  class Event2 {
     constructor() {
       this._eventMap = new Map();
     }
@@ -23597,7 +23597,7 @@ componentName: PropTypes.string,
       this._eventMap.get(event).forEach((callback) => callback(...args));
       return true;
     }
-  };
+  }
   function shouldUseBezier(config) {
     return Boolean(config && typeof config === "object" && (config.duration > 0 || typeof config.easing === "string" || typeof config.easing === "function"));
   }
@@ -23696,7 +23696,7 @@ componentName: PropTypes.string,
   }
   const now$1 = () => Date.now();
   const msPerFrame = 1e3 / 60;
-  class Animation extends Event$1 {
+  class Animation extends Event2 {
     constructor() {
       let props = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
       let config = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
@@ -32243,7 +32243,7 @@ React__default.createElement("div", Object.assign({
       this.onMouseLeave = this.onMouseLeave.bind(this);
       this.renderOption = this.renderOption.bind(this);
       this.onKeyPress = this.onKeyPress.bind(this);
-      this.eventManager = new Event$2();
+      this.eventManager = new Event$1();
       this.foundation = new SelectFoundation(this.adapter);
     }
     get adapter() {
@@ -42733,411 +42733,6 @@ image: {
       };
     }, [showRaw, enable15sVideo, onUpdateVideoDurationSuccess, onUpdateVideoDurationError]);
   }
-  class Node {
-    value;
-    next;
-    constructor(value) {
-      this.value = value;
-    }
-  }
-  class Queue {
-    #head;
-    #tail;
-    #size;
-    constructor() {
-      this.clear();
-    }
-    enqueue(value) {
-      const node = new Node(value);
-      if (this.#head) {
-        this.#tail.next = node;
-        this.#tail = node;
-      } else {
-        this.#head = node;
-        this.#tail = node;
-      }
-      this.#size++;
-    }
-    dequeue() {
-      const current = this.#head;
-      if (!current) {
-        return;
-      }
-      this.#head = this.#head.next;
-      this.#size--;
-      if (!this.#head) {
-        this.#tail = void 0;
-      }
-      return current.value;
-    }
-    peek() {
-      if (!this.#head) {
-        return;
-      }
-      return this.#head.value;
-    }
-    clear() {
-      this.#head = void 0;
-      this.#tail = void 0;
-      this.#size = 0;
-    }
-    get size() {
-      return this.#size;
-    }
-    *[Symbol.iterator]() {
-      let current = this.#head;
-      while (current) {
-        yield current.value;
-        current = current.next;
-      }
-    }
-    *drain() {
-      while (this.#head) {
-        yield this.dequeue();
-      }
-    }
-  }
-  function pLimit(concurrency) {
-    let rejectOnClear = false;
-    if (typeof concurrency === "object") {
-      ({ concurrency, rejectOnClear = false } = concurrency);
-    }
-    validateConcurrency(concurrency);
-    if (typeof rejectOnClear !== "boolean") {
-      throw new TypeError("Expected `rejectOnClear` to be a boolean");
-    }
-    const queue = new Queue();
-    let activeCount = 0;
-    const resumeNext = () => {
-      if (activeCount < concurrency && queue.size > 0) {
-        activeCount++;
-        queue.dequeue().run();
-      }
-    };
-    const next = () => {
-      activeCount--;
-      resumeNext();
-    };
-    const run = async (function_, resolve, arguments_) => {
-      const result = (async () => function_(...arguments_))();
-      resolve(result);
-      try {
-        await result;
-      } catch {
-      }
-      next();
-    };
-    const enqueue = (function_, resolve, reject, arguments_) => {
-      const queueItem = { reject };
-      new Promise((internalResolve) => {
-        queueItem.run = internalResolve;
-        queue.enqueue(queueItem);
-      }).then(run.bind(void 0, function_, resolve, arguments_));
-      if (activeCount < concurrency) {
-        resumeNext();
-      }
-    };
-    const generator2 = (function_, ...arguments_) => new Promise((resolve, reject) => {
-      enqueue(function_, resolve, reject, arguments_);
-    });
-    Object.defineProperties(generator2, {
-      activeCount: {
-        get: () => activeCount
-      },
-      pendingCount: {
-        get: () => queue.size
-      },
-      clearQueue: {
-        value() {
-          if (!rejectOnClear) {
-            queue.clear();
-            return;
-          }
-          const abortError = AbortSignal.abort().reason;
-          while (queue.size > 0) {
-            queue.dequeue().reject(abortError);
-          }
-        }
-      },
-      concurrency: {
-        get: () => concurrency,
-        set(newConcurrency) {
-          validateConcurrency(newConcurrency);
-          concurrency = newConcurrency;
-          queueMicrotask(() => {
-            while (activeCount < concurrency && queue.size > 0) {
-              resumeNext();
-            }
-          });
-        }
-      },
-      map: {
-        async value(iterable, function_) {
-          const promises = Array.from(iterable, (value, index2) => this(function_, value, index2));
-          return Promise.all(promises);
-        }
-      }
-    });
-    return generator2;
-  }
-  function validateConcurrency(concurrency) {
-    if (!((Number.isInteger(concurrency) || concurrency === Number.POSITIVE_INFINITY) && concurrency > 0)) {
-      throw new TypeError("Expected `concurrency` to be a number from 1 and up");
-    }
-  }
-  var StreamSaver = { exports: {} };
-  var hasRequiredStreamSaver;
-  function requireStreamSaver() {
-    if (hasRequiredStreamSaver) return StreamSaver.exports;
-    hasRequiredStreamSaver = 1;
-    (function(module) {
-      ((name, definition) => {
-        module.exports = definition();
-      })("streamSaver", () => {
-        const global2 = typeof window === "object" ? window : this;
-        if (!global2.HTMLElement) console.warn("streamsaver is meant to run on browsers main thread");
-        let mitmTransporter = null;
-        let supportsTransferable = false;
-        const test = (fn) => {
-          try {
-            fn();
-          } catch (e) {
-          }
-        };
-        const ponyfill2 = global2.WebStreamsPolyfill || {};
-        const isSecureContext = global2.isSecureContext;
-        let useBlobFallback = /constructor/i.test(global2.HTMLElement) || !!global2.safari || !!global2.WebKitPoint;
-        const downloadStrategy = isSecureContext || "MozAppearance" in document.documentElement.style ? "iframe" : "navigate";
-        const streamSaver2 = {
-          createWriteStream,
-          WritableStream: global2.WritableStream || ponyfill2.WritableStream,
-          supported: true,
-          version: { full: "2.0.5", major: 2, minor: 0, dot: 5 },
-          mitm: "https://jimmywarting.github.io/StreamSaver.js/mitm.html?version=2.0.0"
-        };
-        function makeIframe(src2) {
-          if (!src2) throw new Error("meh");
-          const iframe = document.createElement("iframe");
-          iframe.hidden = true;
-          iframe.src = src2;
-          iframe.loaded = false;
-          iframe.name = "iframe";
-          iframe.isIframe = true;
-          iframe.postMessage = (...args) => iframe.contentWindow.postMessage(...args);
-          iframe.addEventListener("load", () => {
-            iframe.loaded = true;
-          }, { once: true });
-          document.body.appendChild(iframe);
-          return iframe;
-        }
-        function makePopup(src2) {
-          const options = "width=200,height=100";
-          const delegate = document.createDocumentFragment();
-          const popup = {
-            frame: global2.open(src2, "popup", options),
-            loaded: false,
-            isIframe: false,
-            isPopup: true,
-            remove() {
-              popup.frame.close();
-            },
-            addEventListener(...args) {
-              delegate.addEventListener(...args);
-            },
-            dispatchEvent(...args) {
-              delegate.dispatchEvent(...args);
-            },
-            removeEventListener(...args) {
-              delegate.removeEventListener(...args);
-            },
-            postMessage(...args) {
-              popup.frame.postMessage(...args);
-            }
-          };
-          const onReady = (evt) => {
-            if (evt.source === popup.frame) {
-              popup.loaded = true;
-              global2.removeEventListener("message", onReady);
-              popup.dispatchEvent(new Event("load"));
-            }
-          };
-          global2.addEventListener("message", onReady);
-          return popup;
-        }
-        try {
-          new Response(new ReadableStream());
-          if (isSecureContext && !("serviceWorker" in navigator)) {
-            useBlobFallback = true;
-          }
-        } catch (err) {
-          useBlobFallback = true;
-        }
-        test(() => {
-          const { readable } = new TransformStream();
-          const mc = new MessageChannel();
-          mc.port1.postMessage(readable, [readable]);
-          mc.port1.close();
-          mc.port2.close();
-          supportsTransferable = true;
-          Object.defineProperty(streamSaver2, "TransformStream", {
-            configurable: false,
-            writable: false,
-            value: TransformStream
-          });
-        });
-        function loadTransporter() {
-          if (!mitmTransporter) {
-            mitmTransporter = isSecureContext ? makeIframe(streamSaver2.mitm) : makePopup(streamSaver2.mitm);
-          }
-        }
-        function createWriteStream(filename, options, size2) {
-          let opts = {
-            size: null,
-            pathname: null,
-            writableStrategy: void 0,
-            readableStrategy: void 0
-          };
-          let bytesWritten = 0;
-          let downloadUrl = null;
-          let channel = null;
-          let ts = null;
-          if (Number.isFinite(options)) {
-            [size2, options] = [options, size2];
-            console.warn("[StreamSaver] Deprecated pass an object as 2nd argument when creating a write stream");
-            opts.size = size2;
-            opts.writableStrategy = options;
-          } else if (options && options.highWaterMark) {
-            console.warn("[StreamSaver] Deprecated pass an object as 2nd argument when creating a write stream");
-            opts.size = size2;
-            opts.writableStrategy = options;
-          } else {
-            opts = options || {};
-          }
-          if (!useBlobFallback) {
-            loadTransporter();
-            channel = new MessageChannel();
-            filename = encodeURIComponent(filename.replace(/\//g, ":")).replace(/['()]/g, escape).replace(/\*/g, "%2A");
-            const response = {
-              transferringReadable: supportsTransferable,
-              pathname: opts.pathname || Math.random().toString().slice(-6) + "/" + filename,
-              headers: {
-                "Content-Type": "application/octet-stream; charset=utf-8",
-                "Content-Disposition": "attachment; filename*=UTF-8''" + filename
-              }
-            };
-            if (opts.size) {
-              response.headers["Content-Length"] = opts.size;
-            }
-            const args = [response, "*", [channel.port2]];
-            if (supportsTransferable) {
-              const transformer = downloadStrategy === "iframe" ? void 0 : {
-transform(chunk, controller) {
-                  if (!(chunk instanceof Uint8Array)) {
-                    throw new TypeError("Can only write Uint8Arrays");
-                  }
-                  bytesWritten += chunk.length;
-                  controller.enqueue(chunk);
-                  if (downloadUrl) {
-                    location.href = downloadUrl;
-                    downloadUrl = null;
-                  }
-                },
-                flush() {
-                  if (downloadUrl) {
-                    location.href = downloadUrl;
-                  }
-                }
-              };
-              ts = new streamSaver2.TransformStream(
-                transformer,
-                opts.writableStrategy,
-                opts.readableStrategy
-              );
-              const readableStream = ts.readable;
-              channel.port1.postMessage({ readableStream }, [readableStream]);
-            }
-            channel.port1.onmessage = (evt) => {
-              if (evt.data.download) {
-                if (downloadStrategy === "navigate") {
-                  mitmTransporter.remove();
-                  mitmTransporter = null;
-                  if (bytesWritten) {
-                    location.href = evt.data.download;
-                  } else {
-                    downloadUrl = evt.data.download;
-                  }
-                } else {
-                  if (mitmTransporter.isPopup) {
-                    mitmTransporter.remove();
-                    mitmTransporter = null;
-                    if (downloadStrategy === "iframe") {
-                      makeIframe(streamSaver2.mitm);
-                    }
-                  }
-                  makeIframe(evt.data.download);
-                }
-              } else if (evt.data.abort) {
-                chunks = [];
-                channel.port1.postMessage("abort");
-                channel.port1.onmessage = null;
-                channel.port1.close();
-                channel.port2.close();
-                channel = null;
-              }
-            };
-            if (mitmTransporter.loaded) {
-              mitmTransporter.postMessage(...args);
-            } else {
-              mitmTransporter.addEventListener("load", () => {
-                mitmTransporter.postMessage(...args);
-              }, { once: true });
-            }
-          }
-          let chunks = [];
-          return !useBlobFallback && ts && ts.writable || new streamSaver2.WritableStream({
-            write(chunk) {
-              if (!(chunk instanceof Uint8Array)) {
-                throw new TypeError("Can only write Uint8Arrays");
-              }
-              if (useBlobFallback) {
-                chunks.push(chunk);
-                return;
-              }
-              channel.port1.postMessage(chunk);
-              bytesWritten += chunk.length;
-              if (downloadUrl) {
-                location.href = downloadUrl;
-                downloadUrl = null;
-              }
-            },
-            close() {
-              if (useBlobFallback) {
-                const blob = new Blob(chunks, { type: "application/octet-stream; charset=utf-8" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                link.click();
-              } else {
-                channel.port1.postMessage("end");
-              }
-            },
-            abort() {
-              chunks = [];
-              channel.port1.postMessage("abort");
-              channel.port1.onmessage = null;
-              channel.port1.close();
-              channel.port2.close();
-              channel = null;
-            }
-          }, opts.writableStrategy);
-        }
-        return streamSaver2;
-      });
-    })(StreamSaver);
-    return StreamSaver.exports;
-  }
-  var StreamSaverExports = requireStreamSaver();
-  const streamSaver = getDefaultExportFromCjs(StreamSaverExports);
   var FileSaver_min$1 = { exports: {} };
   var FileSaver_min = FileSaver_min$1.exports;
   var hasRequiredFileSaver_min;
@@ -43216,180 +42811,6 @@ transform(chunk, controller) {
   }
   var FileSaver_minExports = requireFileSaver_min();
   const saveAs = getDefaultExportFromCjs(FileSaver_minExports);
-  class Crc32 {
-    constructor() {
-      this.crc = -1;
-    }
-    append(data) {
-      var crc = this.crc | 0;
-      var table = this.table;
-      for (var offset = 0, len = data.length | 0; offset < len; offset++) {
-        crc = crc >>> 8 ^ table[(crc ^ data[offset]) & 255];
-      }
-      this.crc = crc;
-    }
-    get() {
-      return ~this.crc;
-    }
-  }
-  Crc32.prototype.table = (() => {
-    var i;
-    var j;
-    var t;
-    var table = [];
-    for (i = 0; i < 256; i++) {
-      t = i;
-      for (j = 0; j < 8; j++) {
-        t = t & 1 ? t >>> 1 ^ 3988292384 : t >>> 1;
-      }
-      table[i] = t;
-    }
-    return table;
-  })();
-  const getDataHelper = (byteLength) => {
-    var uint8 = new Uint8Array(byteLength);
-    return {
-      array: uint8,
-      view: new DataView(uint8.buffer)
-    };
-  };
-  const pump = (zipObj) => zipObj.reader.read().then((chunk) => {
-    if (chunk.done) return zipObj.writeFooter();
-    const outputData = chunk.value;
-    zipObj.crc.append(outputData);
-    zipObj.uncompressedLength += outputData.length;
-    zipObj.compressedLength += outputData.length;
-    zipObj.ctrl.enqueue(outputData);
-  });
-  function createWriter(underlyingSource) {
-    const files = Object.create(null);
-    const filenames = [];
-    const encoder = new TextEncoder();
-    let offset = 0;
-    let activeZipIndex = 0;
-    let ctrl;
-    let activeZipObject, closed;
-    function next() {
-      activeZipIndex++;
-      activeZipObject = files[filenames[activeZipIndex]];
-      if (activeZipObject) processNextChunk();
-      else if (closed) closeZip();
-    }
-    var zipWriter = {
-      enqueue(fileLike) {
-        if (closed) throw new TypeError("Cannot enqueue a chunk into a readable stream that is closed or has been requested to be closed");
-        let name = fileLike.name.trim();
-        const date = new Date(typeof fileLike.lastModified === "undefined" ? Date.now() : fileLike.lastModified);
-        if (fileLike.directory && !name.endsWith("/")) name += "/";
-        if (files[name]) throw new Error("File already exists.");
-        const nameBuf = encoder.encode(name);
-        filenames.push(name);
-        const zipObject = files[name] = {
-          level: 0,
-          ctrl,
-          directory: !!fileLike.directory,
-          nameBuf,
-          comment: encoder.encode(fileLike.comment || ""),
-          compressedLength: 0,
-          uncompressedLength: 0,
-          writeHeader() {
-            var header = getDataHelper(26);
-            var data = getDataHelper(30 + nameBuf.length);
-            zipObject.offset = offset;
-            zipObject.header = header;
-            if (zipObject.level !== 0 && !zipObject.directory) {
-              header.view.setUint16(4, 2048);
-            }
-            header.view.setUint32(0, 335546376);
-            header.view.setUint16(6, (date.getHours() << 6 | date.getMinutes()) << 5 | date.getSeconds() / 2, true);
-            header.view.setUint16(8, (date.getFullYear() - 1980 << 4 | date.getMonth() + 1) << 5 | date.getDate(), true);
-            header.view.setUint16(22, nameBuf.length, true);
-            data.view.setUint32(0, 1347093252);
-            data.array.set(header.array, 4);
-            data.array.set(nameBuf, 30);
-            offset += data.array.length;
-            ctrl.enqueue(data.array);
-          },
-          writeFooter() {
-            var footer = getDataHelper(16);
-            footer.view.setUint32(0, 1347094280);
-            if (zipObject.crc) {
-              zipObject.header.view.setUint32(10, zipObject.crc.get(), true);
-              zipObject.header.view.setUint32(14, zipObject.compressedLength, true);
-              zipObject.header.view.setUint32(18, zipObject.uncompressedLength, true);
-              footer.view.setUint32(4, zipObject.crc.get(), true);
-              footer.view.setUint32(8, zipObject.compressedLength, true);
-              footer.view.setUint32(12, zipObject.uncompressedLength, true);
-            }
-            ctrl.enqueue(footer.array);
-            offset += zipObject.compressedLength + 16;
-            next();
-          },
-          fileLike
-        };
-        if (!activeZipObject) {
-          activeZipObject = zipObject;
-          processNextChunk();
-        }
-      },
-      close() {
-        if (closed) throw new TypeError("Cannot close a readable stream that has already been requested to be closed");
-        if (!activeZipObject) closeZip();
-        closed = true;
-      }
-    };
-    function closeZip() {
-      var length = 0;
-      var index2 = 0;
-      var indexFilename, file;
-      for (indexFilename = 0; indexFilename < filenames.length; indexFilename++) {
-        file = files[filenames[indexFilename]];
-        length += 46 + file.nameBuf.length + file.comment.length;
-      }
-      const data = getDataHelper(length + 22);
-      for (indexFilename = 0; indexFilename < filenames.length; indexFilename++) {
-        file = files[filenames[indexFilename]];
-        data.view.setUint32(index2, 1347092738);
-        data.view.setUint16(index2 + 4, 5120);
-        data.array.set(file.header.array, index2 + 6);
-        data.view.setUint16(index2 + 32, file.comment.length, true);
-        if (file.directory) {
-          data.view.setUint8(index2 + 38, 16);
-        }
-        data.view.setUint32(index2 + 42, file.offset, true);
-        data.array.set(file.nameBuf, index2 + 46);
-        data.array.set(file.comment, index2 + 46 + file.nameBuf.length);
-        index2 += 46 + file.nameBuf.length + file.comment.length;
-      }
-      data.view.setUint32(index2, 1347093766);
-      data.view.setUint16(index2 + 8, filenames.length, true);
-      data.view.setUint16(index2 + 10, filenames.length, true);
-      data.view.setUint32(index2 + 12, length, true);
-      data.view.setUint32(index2 + 16, offset, true);
-      ctrl.enqueue(data.array);
-      ctrl.close();
-    }
-    function processNextChunk() {
-      if (!activeZipObject) return;
-      if (activeZipObject.directory) return activeZipObject.writeFooter(activeZipObject.writeHeader());
-      if (activeZipObject.reader) return pump(activeZipObject);
-      if (activeZipObject.fileLike.stream) {
-        activeZipObject.crc = new Crc32();
-        activeZipObject.reader = activeZipObject.fileLike.stream().getReader();
-        activeZipObject.writeHeader();
-      } else next();
-    }
-    return new ReadableStream({
-      start: (c) => {
-        ctrl = c;
-        underlyingSource.start && Promise.resolve(underlyingSource.start(zipWriter));
-      },
-      pull() {
-        return processNextChunk() || underlyingSource.pull && Promise.resolve(underlyingSource.pull(zipWriter));
-      }
-    });
-  }
-  window.ZIP = createWriter;
   function useDownload() {
     const [isDownloading, setIsDownloading] = reactExports.useState(false);
     const [progress, setProgress] = reactExports.useState({
@@ -43544,14 +42965,18 @@ transform(chunk, controller) {
               }
             }
           } else {
-            await createZipStream(
-              downloadImageList,
-              "zipName",
-              options.concurrency || 5,
-              handleProgress,
-              onError
-            );
-            handleProgress(downloadImageList.length, downloadImageList.length);
+            for (let i = 0; i < downloadImageList.length; i++) {
+              const img = downloadImageList[i];
+              try {
+                const resp = await getImageResponse(img.url);
+                const blob = await resp.blob();
+                const name = img.filename || getFileNameFromUrl(img.url);
+                saveAs(blob, name);
+              } catch (e) {
+                onError(img.url, e);
+              }
+              handleProgress(i + 1, downloadImageList.length);
+            }
             options.onSave?.();
           }
         } catch (error2) {
@@ -44321,10 +43746,10 @@ transform(chunk, controller) {
           })();
           var ctxClearTimeout = context.clearTimeout !== root.clearTimeout && context.clearTimeout, ctxNow = Date2 && Date2.now !== root.Date.now && Date2.now, ctxSetTimeout = context.setTimeout !== root.setTimeout && context.setTimeout;
           var nativeCeil = Math2.ceil, nativeFloor = Math2.floor, nativeGetSymbols = Object2.getOwnPropertySymbols, nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined$1, nativeIsFinite = context.isFinite, nativeJoin = arrayProto.join, nativeKeys = overArg(Object2.keys, Object2), nativeMax = Math2.max, nativeMin = Math2.min, nativeNow = Date2.now, nativeParseInt = context.parseInt, nativeRandom = Math2.random, nativeReverse = arrayProto.reverse;
-          var DataView2 = getNative(context, "DataView"), Map2 = getNative(context, "Map"), Promise2 = getNative(context, "Promise"), Set2 = getNative(context, "Set"), WeakMap2 = getNative(context, "WeakMap"), nativeCreate = getNative(Object2, "create");
+          var DataView = getNative(context, "DataView"), Map2 = getNative(context, "Map"), Promise2 = getNative(context, "Promise"), Set2 = getNative(context, "Set"), WeakMap2 = getNative(context, "WeakMap"), nativeCreate = getNative(Object2, "create");
           var metaMap = WeakMap2 && new WeakMap2();
           var realNames = {};
-          var dataViewCtorString = toSource(DataView2), mapCtorString = toSource(Map2), promiseCtorString = toSource(Promise2), setCtorString = toSource(Set2), weakMapCtorString = toSource(WeakMap2);
+          var dataViewCtorString = toSource(DataView), mapCtorString = toSource(Map2), promiseCtorString = toSource(Promise2), setCtorString = toSource(Set2), weakMapCtorString = toSource(WeakMap2);
           var symbolProto = Symbol2 ? Symbol2.prototype : undefined$1, symbolValueOf = symbolProto ? symbolProto.valueOf : undefined$1, symbolToString = symbolProto ? symbolProto.toString : undefined$1;
           function lodash2(value) {
             if (isObjectLike(value) && !isArray2(value) && !(value instanceof LazyWrapper)) {
@@ -46355,7 +45780,7 @@ isIndex(key2, length)))) {
             return result2;
           };
           var getTag2 = baseGetTag;
-          if (DataView2 && getTag2(new DataView2(new ArrayBuffer(1))) != dataViewTag || Map2 && getTag2(new Map2()) != mapTag || Promise2 && getTag2(Promise2.resolve()) != promiseTag || Set2 && getTag2(new Set2()) != setTag || WeakMap2 && getTag2(new WeakMap2()) != weakMapTag) {
+          if (DataView && getTag2(new DataView(new ArrayBuffer(1))) != dataViewTag || Map2 && getTag2(new Map2()) != mapTag || Promise2 && getTag2(Promise2.resolve()) != promiseTag || Set2 && getTag2(new Set2()) != setTag || WeakMap2 && getTag2(new WeakMap2()) != weakMapTag) {
             getTag2 = function(value) {
               var result2 = baseGetTag(value), Ctor = result2 == objectTag ? value.constructor : undefined$1, ctorString = Ctor ? toSource(Ctor) : "";
               if (ctorString) {
@@ -48133,7 +47558,7 @@ isIndex(key2, length)))) {
             position -= target.length;
             return position >= 0 && string.slice(position, end) == target;
           }
-          function escape2(string) {
+          function escape(string) {
             string = toString(string);
             return string && reHasUnescapedHtml.test(string) ? string.replace(reUnescapedHtml, escapeHtmlChar) : string;
           }
@@ -48744,7 +48169,7 @@ isIndex(key2, length)))) {
           lodash2.divide = divide;
           lodash2.endsWith = endsWith;
           lodash2.eq = eq;
-          lodash2.escape = escape2;
+          lodash2.escape = escape;
           lodash2.escapeRegExp = escapeRegExp;
           lodash2.every = every;
           lodash2.find = find;
@@ -49994,28 +49419,5 @@ jsxRuntimeExports.jsx(
     ReactDOM$2.createRoot(app).render( jsxRuntimeExports.jsx(App, {}));
   }
   mountApp();
-  let lastNavUrl = location.href;
-  const origPushState = history.pushState.bind(history);
-  const origReplaceState = history.replaceState.bind(history);
-  history.pushState = function(...args) {
-    origPushState(...args);
-    if (location.href !== lastNavUrl) {
-      lastNavUrl = location.href;
-      setTimeout(() => location.reload(), 50);
-    }
-  };
-  history.replaceState = function(...args) {
-    origReplaceState(...args);
-    if (location.href !== lastNavUrl) {
-      lastNavUrl = location.href;
-      setTimeout(() => location.reload(), 50);
-    }
-  };
-  window.addEventListener("popstate", () => {
-    if (location.href !== lastNavUrl) {
-      lastNavUrl = location.href;
-      setTimeout(() => location.reload(), 50);
-    }
-  });
 
 })();
