@@ -13,12 +13,14 @@ async function getPlayInfo(vid: string | number): Promise<string | null> {
       body: JSON.stringify({ key: vid, type: "video" }),
     });
     const data = await res.json();
-    if (data?.code !== 0 || !data.data) return null;
+    if (data?.code !== 0) { console.warn("[api] get_play_info code:", data?.code, data?.msg); return null; }
+    if (!data.data) { console.warn("[api] get_play_info 无 data"); return null; }
     const d = data.data;
     const m = d.original_media_info?.main_url || d.play_infos?.[0]?.main || d.play_info?.main;
     if (m) return m.replace(/lr=[^&]+/g, "lr=video_gen_no_watermark");
+    console.warn("[api] get_play_info 响应中无播放地址, keys:", Object.keys(d).join(","));
     return null;
-  } catch { return null; }
+  } catch (e) { console.warn("[api] get_play_info 异常:", e); return null; }
 }
 
 /** 方案2：get_download_info（上游2.0.4方案，3步） */
