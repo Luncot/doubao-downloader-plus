@@ -26,32 +26,19 @@ export function useInjectButtons() {
       return null;
     }
 
-    /** 下载视频：先取重定向后URL再清洗lr=参数 */
-    async function downloadVideo(url: string): Promise<boolean> {
+    /** 下载视频 */
+    async function downloadVideo(url: string) {
       try {
-        // 1. 用 redirect: "manual" 获取重定向目标 URL
-        const resp = await fetch(url, { method: "HEAD", redirect: "manual" } as any);
-        let targetUrl = url;
-        if (resp.status >= 300 && resp.status < 400) {
-          const location = resp.headers.get("location");
-          if (location) targetUrl = new URL(location, url).href;
-        }
-        // 2. 在最终 URL 上替换 lr= 水印参数
-        const cleanUrl = targetUrl.replace(/lr=[^&]+/g, "lr=video_gen_no_watermark");
-        // 3. 用清理后的 URL 下载
-        const dl = await fetch(cleanUrl, { mode: "cors", credentials: "omit" });
-        if (!dl.ok) throw Error();
-        const blob = await dl.blob();
+        const resp = await fetch(url, { mode: "cors", credentials: "omit" });
+        if (!resp.ok) throw Error();
+        const blob = await resp.blob();
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = blobUrl; a.download = `doubao_video_${Date.now()}.mp4`;
         document.body.appendChild(a); a.click();
         setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 2000);
-        return true;
-      } catch (e) {
-        console.warn("[video] fetch 下载失败:", e);
+      } catch {
         window.open(url, "_blank");
-        return false;
       }
     }
 
