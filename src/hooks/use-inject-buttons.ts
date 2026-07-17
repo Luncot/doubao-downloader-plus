@@ -185,12 +185,11 @@ export function useInjectButtons() {
           if (found?.vid) {
             console.log("[video] 找到 vid:", found.vid, "msgId:", found.msgId);
 
-            // 1. get_play_info（优先，带 origin/referer + lr=）
-            finalUrl = await fetchCleanVideoUrl(found.vid);
-            if (finalUrl) usedMethod = "get_play_info";
+            // 1. 上游 getVideoUrl（先用 get_download_info API）
+            try { finalUrl = await getVideoUrl(found.vid); if (finalUrl) usedMethod = "get_download_info"; } catch {}
 
-            // 2. 上游 getVideoUrl 备用
-            if (!finalUrl) { try { finalUrl = await getVideoUrl(found.vid); if (finalUrl) usedMethod = "get_download_info"; } catch {} }
+            // 2. get_play_info 备用
+            if (!finalUrl) { finalUrl = await fetchCleanVideoUrl(found.vid); if (finalUrl) usedMethod = "get_play_info"; }
 
             // 3. share_save 备用
             if (!finalUrl && found.msgId) { finalUrl = await fetchVideoViaShare(found.msgId, found.vid); if (finalUrl) usedMethod = "share_save"; }
