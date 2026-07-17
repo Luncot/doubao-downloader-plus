@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "豆包下载器 Plus",
+  "version": "2.0.0",
+  "description": "豆包/Dola AI 无水印资源批量下载 + 15秒视频生成",
+  "icons": { "128": "icon.png" },
+  "permissions": ["downloads", "storage"],
+  "host_permissions": [
+    "https://www.doubao.com/*",
+    "https://*.doubao.com/*",
+    "https://www.dola.com/*",
+    "https://*.dola.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.doubao.com/chat/*",
+        "https://*.doubao.com/chat/*",
+        "https://www.dola.com/chat/*",
+        "https://*.dola.com/chat/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
