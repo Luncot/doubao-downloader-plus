@@ -7,7 +7,6 @@ import { ConvContext } from "./context/ConvContext";
 import { ConvFilterContext } from "./context/ConvFilterContext";
 import { useDownload } from "./hooks/use-download";
 import { Button, Notification, Toast, Typography } from "@douyinfe/semi-ui-19";
-import ProgressModal from "./components/ProgressModal";
 import { db, SettingService } from "./db";
 import SettingModal from "./components/SettingModal";
 import { SettingContext } from "./context/SettingContext";
@@ -67,7 +66,7 @@ function App() {
     })
   }, []);
 
-  const { download, progress, isDownloading } = useDownload();
+  const { download } = useDownload();
 
   const setting =
     useLiveQuery(() => db.setting.toArray(), []) || ([] as Setting[]);
@@ -152,10 +151,6 @@ function App() {
 
   const handleDownload = useCallback(
     async (convMessages: ConvMessage[]) => {
-      if (isDownloading) {
-        Toast.warning("正在下载中，请勿重复下载");
-        return;
-      }
       if (convMessages.length === 0) {
         Toast.warning("请选择要下载的内容");
         return;
@@ -285,7 +280,7 @@ function App() {
         },
       });
     },
-    [download, isDownloading, setting],
+    [download, setting],
   );
 
   const handlePlay = useCallback(async (convMessage: ConvMessage) => {
@@ -296,7 +291,7 @@ function App() {
       return;
     };
     window.open(playUrl, "_blank");
-  }, [download, isDownloading, setting])
+  }, [])
 
   const handleDownloadAll = useCallback(() => {
     const selectConv = convFilter.showConvId;
@@ -336,7 +331,6 @@ function App() {
       className="dd:bg-background dd:text-foreground dd:h-0"
     >
       <Indicator onClick={() => setIsOpenMainPanel(!isOpenMainPanel)} />
-      <ProgressModal isDownloading={isDownloading} progress={progress} />
       <SettingContext.Provider
         value={{
           setting,
