@@ -22,26 +22,37 @@ export function useInjectButtons() {
       let src = videoEl.getAttribute("src");
       if (src && src.startsWith("http")) return src;
       const source = videoEl.querySelector("source");
-      if (source) {
-        src = source.getAttribute("src");
-        if (src && src.startsWith("http")) return src;
-      }
+      if (source) { src = source.getAttribute("src"); if (src?.startsWith("http")) return src; }
       return null;
     }
 
-    function downloadUrl(url: string, filename: string) {
-      if (url.startsWith("blob:")) return;
-      // 1. 尝试 fetch+blob 触发下载弹窗
-      fetch(url, { mode: "cors", credentials: "omit" })
-        .then(r => { if (!r.ok) throw Error(); return r.blob(); })
-        .then(blob => {
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = blobUrl; a.download = filename;
-          document.body.appendChild(a); a.click();
-          setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 2000);
-        })
-        .catch(() => { window.open(url, "_blank"); });
+    /** 下载视频：先取重定向后URL再清洗lr=参数 */
+    async function downloadVideo(url: string): Promise<boolean> {
+      try {
+        // 1. 用 redirect: "manual" 获取重定向目标 URL
+        const resp = await fetch(url, { method: "HEAD", redirect: "manual" } as any);
+        let targetUrl = url;
+        if (resp.status >= 300 && resp.status < 400) {
+          const location = resp.headers.get("location");
+          if (location) targetUrl = new URL(location, url).href;
+        }
+        // 2. 在最终 URL 上替换 lr= 水印参数
+        const cleanUrl = targetUrl.replace(/lr=[^&]+/g, "lr=video_gen_no_watermark");
+        // 3. 用清理后的 URL 下载
+        const dl = await fetch(cleanUrl, { mode: "cors", credentials: "omit" });
+        if (!dl.ok) throw Error();
+        const blob = await dl.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl; a.download = `doubao_video_${Date.now()}.mp4`;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 2000);
+        return true;
+      } catch (e) {
+        console.warn("[video] fetch 下载失败:", e);
+        window.open(url, "_blank");
+        return false;
+      }
     }
 
     function toast(msg: string, duration = 2500) {
@@ -93,7 +104,6 @@ export function useInjectButtons() {
       return null;
     }
 
-    /** 旧 get_play_info API（备选） */
     async function fetchCleanVideoUrl(vid: string): Promise<string | null> {
       try {
         const baseUrl = "https://www.doubao.com/samantha/media/get_play_info";
@@ -115,7 +125,6 @@ export function useInjectButtons() {
       } catch { return null; }
     }
 
-    /** share_save 备用 */
     async function fetchVideoViaShare(msgId: string, vid: string): Promise<string | null> {
       try {
         const shareResp = await fetch(
@@ -145,11 +154,9 @@ export function useInjectButtons() {
 
       const msgId = findMessageId(container);
 
-      // 按钮直接贴在容器底部（极高 z-index 穿透 xgplayer）
       const btn = document.createElement("button");
       btn.textContent = "⬇️ 下载视频";
-      container.style.position = "relative";
-      container.style.overflow = "visible";
+      container.style.position = "relative"; container.style.overflow = "visible";
       Object.assign(btn.style, {
         position: "absolute", bottom: "10px", right: "10px", zIndex: "9999999",
         padding: "6px 14px", minWidth: "82px", textAlign: "center",
@@ -178,38 +185,31 @@ export function useInjectButtons() {
           if (found?.vid) {
             console.log("[video] 找到 vid:", found.vid, "msgId:", found.msgId);
 
-            // 1. get_play_info API（最可靠，带 origin/referer + lr=）
+            // 1. get_play_info（优先，带 origin/referer + lr=）
             finalUrl = await fetchCleanVideoUrl(found.vid);
             if (finalUrl) usedMethod = "get_play_info";
 
-            // 2. 上游 getVideoUrl（含 get_download_info 备用）
+            // 2. 上游 getVideoUrl 备用
             if (!finalUrl) { try { finalUrl = await getVideoUrl(found.vid); if (finalUrl) usedMethod = "get_download_info"; } catch {} }
 
             // 3. share_save 备用
             if (!finalUrl && found.msgId) { finalUrl = await fetchVideoViaShare(found.msgId, found.vid); if (finalUrl) usedMethod = "share_save"; }
           } else {
-            console.warn("[video] 未找到 vid，尝试全局缓存取最后一个vid");
+            console.warn("[video] 未找到 vid，尝试全局缓存");
             const gc = (window as any).__doubaoVidCache as Map<string, string> | undefined;
             if (gc && gc.size > 0) {
               const last = Array.from(gc.entries()).pop()!;
               console.log("[video] 从全局缓存取 vid:", last[1], "msgId:", last[0]);
-              try { finalUrl = await getVideoUrl(last[1]); if (finalUrl) usedMethod = "get_download_info(fallback)"; } catch {}
-              if (!finalUrl) { finalUrl = await fetchCleanVideoUrl(last[1]); if (finalUrl) usedMethod = "get_play_info(fallback)"; }
+              finalUrl = await fetchCleanVideoUrl(last[1]);
+              if (finalUrl) usedMethod = "get_play_info(fallback)";
+              if (!finalUrl) { try { finalUrl = await getVideoUrl(last[1]); if (finalUrl) usedMethod = "get_download_info(fallback)"; } catch {} }
             }
-
-            if (!finalUrl) {
-              const domUrl = findVideoSrc(container);
-              if (domUrl) {
-                finalUrl = domUrl.replace(/lr=video_gen_watermark_dyn/, "lr=video_gen_no_watermark")
-                                 .replace(/lr=video_gen_watermark/, "lr=video_gen_no_watermark");
-                if (finalUrl) usedMethod = "dom_src";
-              }
-            }
+            if (!finalUrl) { const domUrl = findVideoSrc(container); if (domUrl) { finalUrl = domUrl.replace(/lr=[^&]+/g, "lr=video_gen_no_watermark"); usedMethod = "dom_src"; } }
           }
 
           if (finalUrl) {
             console.log("[video] ✅ 成功，方式:", usedMethod, "URL:", finalUrl.slice(0, 100));
-            downloadUrl(finalUrl, `doubao_video_${Date.now()}.mp4`);
+            await downloadVideo(finalUrl);
             btn.textContent = "✓ 已下载"; btn.dataset.ok = "true";
             btn.style.background = "rgba(16, 185, 129, 0.85)"; btn.style.opacity = "1";
             setTimeout(() => {
@@ -228,8 +228,6 @@ export function useInjectButtons() {
         }
       };
     }
-
-    // ========== DOM 监控 ==========
 
     function findVideoContainer(el: Element): HTMLElement | null {
       let parent = el.parentElement;
