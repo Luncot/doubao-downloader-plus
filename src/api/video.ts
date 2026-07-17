@@ -10,7 +10,7 @@ async function getPlayInfo(vid: string | number): Promise<string | null> {
     if (data?.code !== 0 || !data.data) return null;
     const d = data.data;
     const m = d.original_media_info?.main_url || d.play_infos?.[0]?.main || d.play_info?.main;
-    if (m) return m;
+    if (m) return m.replace(/lr=[^&]+/g, "lr=video_gen_no_watermark");
     return null;
   } catch { return null; }
 }
@@ -35,7 +35,9 @@ async function getDownloadInfo(vid: string | number): Promise<string | null> {
       body: JSON.stringify({ requests: [{ node_id: nodeId }] }),
     });
     const dlData = await dlResp.json();
-    return dlData.data?.download_infos?.[0]?.main_url || null;
+    const mainUrl = dlData.data?.download_infos?.[0]?.main_url;
+    if (mainUrl) return mainUrl.replace(/lr=[^&]+/g, "lr=video_gen_no_watermark");
+    return null;
   } catch { return null; }
 }
 
