@@ -1,21 +1,20 @@
+// ===== Chrome 扩展快速下载桥接 =====
+const __origFetch = window.fetch;
+window.fetch = function(input, init) {
+  const url = typeof input === 'string' ? input : input?.url || '';
+  const isVideoDl = init?.method !== 'POST' && (
+    url.includes('doubao.com') || url.includes('douyinvod.com') || url.includes('idouyinvod.com')
+  ) && (url.includes('.mp4') || url.includes('mime_type=video') || url.includes('/video/'));
+  if (isVideoDl) {
+    window.postMessage({ type: 'ce_download_video', url, filename: `doubao_video_${Date.now()}.mp4` }, '*');
+    return new Promise(() => {});
+  }
+  return __origFetch.apply(this, arguments);
+};
+// ===== 桥接结束 =====
 
 (function () {
   'use strict';
-
-  // ===== Chrome 扩展快速下载桥接 =====
-  const __origFetch = window.fetch;
-  window.fetch = function(input, init) {
-    const url = typeof input === 'string' ? input : input?.url || '';
-    const isVideoDl = init?.method !== 'POST' && (
-      url.includes('doubao.com') || url.includes('douyinvod.com') || url.includes('idouyinvod.com')
-    ) && (url.includes('.mp4') || url.includes('mime_type=video') || url.includes('/video/'));
-    if (isVideoDl) {
-      window.postMessage({ type: 'ce_download_video', url, filename: `doubao_video_${Date.now()}.mp4` }, '*');
-      return new Promise(() => {});
-    }
-    return __origFetch.apply(this, arguments);
-  };
-  // ===== 桥接结束 =====
 
   const d=new Set;const importCSS = async e=>{d.has(e)||(d.add(e),(t=>{typeof GM_addStyle=="function"?GM_addStyle(t):(document.head||document.documentElement).appendChild(document.createElement("style")).append(t);})(e));};
 
