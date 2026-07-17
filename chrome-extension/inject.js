@@ -43551,6 +43551,7 @@ transform(chunk, controller) {
               handleProgress,
               onError
             );
+            handleProgress(downloadImageList.length, downloadImageList.length);
             options.onSave?.();
           }
         } catch (error2) {
