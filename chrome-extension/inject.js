@@ -11,6 +11,7 @@
     ) && (url.includes('.mp4') || url.includes('mime_type=video') || url.includes('/video/'));
     if (isVideoDl) {
       window.postMessage({ type: 'ce_download_video', url, filename: `doubao_video_${Date.now()}.mp4` }, '*');
+      return Promise.resolve(new Response());
     }
     return __origFetch.apply(this, arguments);
   };
