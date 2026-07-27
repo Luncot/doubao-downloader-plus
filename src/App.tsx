@@ -11,7 +11,7 @@ import { db, SettingService } from "./db";
 import SettingModal from "./components/SettingModal";
 import { SettingContext } from "./context/SettingContext";
 import { useLiveQuery } from "dexie-react-hooks";
-import { completeSuffix, replaceTemplate } from "./utils/common";
+import { completeSuffix, cleanWatermarkUrl, replaceTemplate } from "./utils/common";
 import { getVideoUrl } from "@/api/video";
 import { useInjectButtons } from "./hooks/use-inject-buttons";
 import { use15sToggle } from "./hooks/use-15s-toggle";
@@ -193,9 +193,21 @@ function App() {
         (conv) => conv.creation.creation_type === "video",
       );
 
-      // 解析视频真实下载地址
+      // 解析视频真实下载地址（先查 fetch 拦截缓存，再调 API）
       const videoResults = await Promise.allSettled(
         videoConvs.map(async (conv) => {
+          // dola.com：API 被 country restricted，只能从缓存拿
+          if (location.hostname.includes("dola.com")) {
+            const cache = (window as any).__doubaoCleanUrlCache as Map<string, string> | undefined;
+            const cached = cache?.get(conv.message_id!) || cache?.get(conv.creation.vid!) || cache?.get("fallback");
+            if (cached) {
+              console.log("[批量] 从缓存取到视频地址 msgId=", conv.message_id, "vid=", conv.creation.vid, cached.slice(0, 80));
+              return { conv, videoUrl: cleanWatermarkUrl(cached) };
+            }
+            console.warn("[批量] 缓存未命中, vid:", conv.creation.vid);
+            return { conv, videoUrl: "" };
+          }
+          // doubao.com：正常调 API
           const videoUrl = await getVideoUrl(conv.creation.vid!);
           return { conv, videoUrl };
         }),
@@ -222,11 +234,14 @@ function App() {
         }));
 
       // 构建视频下载列表
+      console.log("[批量] videoConvs:", videoConvs.length, "videoResults:", videoResults.length, "downloadedUrl.size:", downloadedUrl.size);
       const videoDownloads: typeof imageDownloads = [];
       videoResults.forEach((result) => {
-        if (result.status === "fulfilled") {
+        const vUrl = (result as any).value?.videoUrl;
+        const isDown = downloadedUrl.has(vUrl);
+        console.log("[批量] result:", result.status, "videoUrl:", vUrl?.slice(0, 60), "hasDownloaded:", isDown);
+        if (result.status === "fulfilled" && vUrl && !isDown) {
           const { conv, videoUrl } = result.value;
-          if (!downloadedUrl.has(videoUrl)) {
             videoDownloads.push({
               conversation_id: conv.conversation_id,
               message_id: conv.message_id,
@@ -242,7 +257,6 @@ function App() {
               folder: createFolder ? conv.tts_content + "/" : "",
             });
           }
-        }
       });
 
       // 统计获取失败的视频数量
@@ -254,11 +268,13 @@ function App() {
       }
 
       const downloadImages = [...imageDownloads, ...videoDownloads];
+      console.log("[批量] 共", imageDownloads.length, "张图 +", videoDownloads.length, "个视频 =", downloadImages.length, "项待下载");
 
       if (downloadImages.length === 0) {
         Toast.warning("没有可下载的内容");
         return;
       }
+      console.log("[批量] 开始下载, 第1项URL:", downloadImages[0]?.url?.slice(0, 100));
       // 视频缩略图URL，用于面板展示"已下载"标识
       const videoThumbnailUrls = videoResults
         .filter((r): r is PromiseFulfilledResult<{ conv: ConvMessage & { creation: Creation }; videoUrl: string }> => r.status === "fulfilled")
@@ -284,12 +300,16 @@ function App() {
   );
 
   const handlePlay = useCallback(async (convMessage: ConvMessage) => {
-    if (!convMessage.creation.vid) return;
-    const playUrl = await getVideoUrl(convMessage.creation.vid)
-    if (!playUrl) {
+    if (!convMessage.creation?.vid) return;
+    if (location.hostname.includes("dola.com")) {
+      const cache = (window as any).__doubaoCleanUrlCache as Map<string, string> | undefined;
+      const cached = cache?.get(convMessage.creation.vid) || cache?.get("fallback");
+      if (cached) { window.open(cleanWatermarkUrl(cached), "_blank"); return; }
       Toast.error("获取视频播放地址失败");
       return;
-    };
+    }
+    const playUrl = await getVideoUrl(convMessage.creation.vid);
+    if (!playUrl) { Toast.error("获取视频播放地址失败"); return; }
     window.open(playUrl, "_blank");
   }, [])
 

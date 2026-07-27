@@ -4,7 +4,7 @@
   "version": "2.1.0",
   "description": "豆包/Dola AI 无水印资源批量下载 + 15秒视频生成",
   "icons": { "128": "icon.png" },
-  "permissions": ["downloads", "storage"],
+  "permissions": ["downloads", "storage", "debugger", "tabs", "declarativeNetRequest", "declarativeNetRequestFeedback"],
   "host_permissions": [
     "https://www.doubao.com/*",
     "https://*.doubao.com/*",
@@ -17,6 +17,13 @@
   }],
   "background": {
     "service_worker": "background.js"
+  },
+  "declarative_net_request": {
+    "rule_resources": [{
+      "id": "watermark_rules",
+      "enabled": true,
+      "path": "rules.json"
+    }]
   },
   "content_scripts": [
     {

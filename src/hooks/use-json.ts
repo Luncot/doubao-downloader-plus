@@ -106,6 +106,13 @@ function extractCreations({
   return result;
 }
 
+function getVideoDuration(): number {
+  try {
+    const v = localStorage.getItem("doubao_video_duration");
+    return v ? Math.min(15, Math.max(4, Math.round(Number(v)))) : 15;
+  } catch { return 15; }
+}
+
 function updateVideoDuration(
   data: any,
   enable15sVideo: boolean,
@@ -116,10 +123,11 @@ function updateVideoDuration(
   const chatAbility = data?.chat_ability;
   if (chatAbility?.ability_type !== 17) return;
   try {
+    const duration = getVideoDuration();
     const abilityParam = JSON.parse(chatAbility.ability_param || "{}");
-    abilityParam.duration = 15;
+    abilityParam.duration = duration;
     chatAbility.ability_param = JSON.stringify(abilityParam);
-    console.log("[15s] ✅ JSON.stringify 注入成功, duration=15");
+    console.log(`[15s] ✅ JSON.stringify 注入成功, duration=${duration}`);
     onSuccess?.();
   } catch (error) {
     onError?.(error);
