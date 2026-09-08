@@ -80,6 +80,9 @@ function extractCreations({
             },
           },
         } as ConvMessage);
+        // 视频 creation 可能同时带 image（封面/预览）——直接返回，
+        // 否则同一视频会再按图片入列一次（列表里出现双条、视频/图片混淆）
+        return;
       }
       const image = creation?.image;
       if (!image) return;
