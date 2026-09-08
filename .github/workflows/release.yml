@@ -21,12 +21,11 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
-
-      - name: Install esbuild
-        run: pnpm install --ignore-scripts=false esbuild
+          # 固定与本地一致的版本，避免 pnpm 大版本语法漂移（--ignore-scripts=false 已在 v11+ 废弃）
+          version: 12
 
       - name: Install dependencies
+        # esbuild 的 postinstall 由仓库根 pnpm-workspace.yaml 的 allowBuilds 放行，无需单独 install
         run: pnpm install --frozen-lockfile
 
       - name: Build project
