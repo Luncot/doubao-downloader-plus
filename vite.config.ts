@@ -19,7 +19,8 @@ export default defineConfig({
         icon: "https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/chat/static/image/logo-icon-white-bg.72df0b1a.png",
         namespace: "npm/vite-plugin-monkey",
         match: ["https://www.doubao.com/chat/*", "https://www.dola.com/chat/*"],
-        "run-at": "document-start",
+        // document-start 在豆包 2026-09 改版后挂载失败（页面环境未就绪），须用 document-end
+        "run-at": "document-end",
         grant: "none",
       },
     }),
