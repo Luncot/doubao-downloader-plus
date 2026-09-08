@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         豆包下载器
 // @namespace    npm/vite-plugin-monkey
-// @version      2.1.0
+// @version      2.2.0
 // @description  豆包AI生图去水印批量下载!
 // @icon         https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/chat/static/image/logo-icon-white-bg.72df0b1a.png
 // @match        https://www.doubao.com/chat/*
@@ -38039,7 +38039,7 @@ jsxRuntimeExports.jsx(Button$1, { onClick: handleDownloadAll, type: "tertiary", 
       getLatestRelease().then((data) => {
         if (!data?.tag_name) return;
         const latestVersion = data.tag_name.replace("v", "");
-        const isNewVer = isNewVersion("2.1.0", latestVersion) || false;
+        const isNewVer = isNewVersion("2.2.0", latestVersion) || false;
         setNewVersion({
           body: data.body,
           isNew: isNewVer

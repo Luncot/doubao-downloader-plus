@@ -11,8 +11,19 @@ doubao-downloader (豆包下载器) is a browser extension and userscript for do
 - **Dev server:** `pnpm dev` — starts Vite dev server with userscript hot-reload via vite-plugin-monkey
 - **Build:** `pnpm build` — runs `tsc` (type-check) then `vite build` (produces `dist/doubao-downloader.user.js` and extension files)
 - **Preview:** `pnpm preview` — preview production build locally
+- **Smoke:** `pnpm smoke` — build-artifact consistency checks against `package.json` version (no framework, `node scripts/smoke.mjs`)
+- **Release:** `pnpm release` — one-shot publish pipeline: build → sync version markers in `chrome-extension/` (`inject.js` header/macro, `manifest.json`) to `package.json` version → repack `doubao-downloader-plus.zip` (via `scripts/repack.ps1`) → run smoke; abort on any failure
 
-There are no test or lint scripts. Code quality is enforced via TypeScript strict mode (`tsc` in the build step).
+There are no unit-test or lint scripts. Automated safety net = TypeScript strict mode (`tsc` in the build step) + the smoke script above; UI/interaction verification is a manual checklist (`SMOKE_CHECKLIST.md`).
+
+### Release workflow (important)
+
+The repo produces **two distribution lines from one codebase**; never bump only `package.json`:
+
+1. Userscript → `dist/doubao-downloader.user.js` (vite-plugin-monkey injects `@version` from `package.json`)
+2. "豆包下载器 Plus" Chrome extension → `chrome-extension/` (hand-maintained MV3 shell). **Its `inject.js` contains historical hand-applied fixes and is NOT reproducible from current `src` — never overwrite it wholesale** with a fresh build output. Only its version markers (`@version` header, `isNewVersion("x.y.z", …)` macro, `manifest.json` version) must match `package.json`
+
+`pnpm release` performs build + version sync + repack + smoke automatically. If you change core `src` logic that also needs to reach the extension line, manually reconcile the diff against `chrome-extension/inject.js` before releasing. End-to-end tests are impossible without a real logged-in Doubao/Dola page — use `SMOKE_CHECKLIST.md` before publishing. Note: `package.json` must stay BOM-free plain UTF-8 (a BOM breaks Vite's toolchain), and PowerShell scripts must be saved as UTF-8 **with BOM** (PS 5.1 requirement).
 
 ## Architecture
 
